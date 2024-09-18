@@ -1,0 +1,19 @@
+ARG NODE_VERSION
+
+FROM ${NODE_VERSION}
+
+WORKDIR /usr/src/app
+
+# COPY redeploy.sh /usr/src/app/redeploy.sh
+
+# RUN chmod +x /usr/src/app/redeploy.sh
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+RUN npm install -g ts-node
+
+EXPOSE ${PORT}

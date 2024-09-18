@@ -1,0 +1,17 @@
+[
+  {
+    "id": "redeploy-service",
+    "execute-command": "/usr/src/app/redeploy.sh",
+    "command-working-directory": "/usr/src/app",
+    "trigger-rule": {
+      "match": {
+        "type": "value",
+        "value": "push",
+        "parameter": {
+          "source": "payload",
+          "name": "ref"
+        }
+      }
+    }
+  }
+]

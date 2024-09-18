@@ -1,0 +1,102 @@
+{
+  "engines": {
+    "node": "22.6"
+  },
+  "name": "express-server",
+  "version": "1.0.0",
+  "description": "A Boilerplate NodeJS Express Server Template written in Typescript built for scale!",
+  "main": "server.js",
+  "scripts": {
+    "start": "tsc && node code/server.js",
+    "start-server": "node code/server.js",
+    "tsc": "tsc-watch",
+    "pm2": "pm2 start pm2.config.js",
+    "node-dev": "nodemon ./code/server.js",
+    "dev": "npm-run-all --parallel tsc node-dev",
+    "ts-dev": "npx ts-node-dev --poll --watch ./src/* --respawn ./src/server.ts",
+    "ts": "ts-node ./src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Express-Server"
+  },
+  "keywords": [
+    "express",
+    "upload",
+    "download",
+    "server",
+    "socket.io",
+    "web sockets",
+    "redis",
+    "mongodb",
+    "mysql",
+    "postgres",
+    "server events"
+  ],
+  "dependencies": {
+    "@aws-sdk/client-ses": "^3.473.0",
+    "@socket.io/redis-adapter": "^8.3.0",
+    "backblaze-b2": "^1.7.0",
+    "buffer-image-size": "^0.6.4",
+    "compression": "^1.7.4",
+    "cookie": "^0.6.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.0.0",
+    "imagemin": "7.0.0",
+    "imagemin-jpeg-recompress": "7.1.0",
+    "imagemin-jpegtran": "7.0.0",
+    "imagemin-pngquant": "9.0.2",
+    "jsonwebtoken": "^9.0.0",
+    "moment": "^2.29.4",
+    "mongoose": "^7.1.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.10.1",
+    "nodemailer": "^6.9.7",
+    "nodemon": "^2.0.22",
+    "npm-run-all": "^4.1.5",
+    "pg": "^8.12.0",
+    "pm2": "^5.4.2",
+    "redis": "^4.6.14",
+    "sharp": "^0.33.4",
+    "socket.io": "^4.6.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@trpc/server": "^10.45.2",
+    "@types/backblaze-b2": "^1.5.6",
+    "@types/bcrypt": "^5.0.2",
+    "@types/compression": "^1.7.5",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.14.8",
+    "@types/nodemailer": "^6.4.15",
+    "@types/pg": "^8.11.6",
+    "@types/semver": "^7.5.8",
+    "@types/socket.io": "^3.0.2",
+    "@types/uuid": "^9.0.8",
+    "mongodb-memory-server": "^9.4.0",
+    "request-stats": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsc-watch": "^6.0.4",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.4"
+  },
+  "config": {
+    "mongodbMemoryServer": {
+      "debug": "off"
+    }
+  },
+  "author": "Day2DayJa",
+  "license": "MIT"
+}

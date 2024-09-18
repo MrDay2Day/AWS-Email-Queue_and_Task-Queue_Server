@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "outDir": "code",
+    "rootDir": "src",
+    "target": "ES6",
+    "lib": ["dom", "esnext"],
+    "module": "NodeNext",
+    "strict": true,
+    "typeRoots": ["src/types/global.d.ts", "./node_modules/@types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

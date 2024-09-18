@@ -1,0 +1,23 @@
+version: "3.9"
+
+name: ${APP_CONTAINER_NAME}-container
+services:
+  node-server:
+    environment:
+      - NODE_ENV=prod
+      - PORT=${PORT}
+      - APP_NAME=${APP_NAME}
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+        PORT: ${PORT}
+    volumes:
+      - /usr/src/app
+    container_name: ${APP_NAME}-Production
+    expose:
+      - ${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+    command: npx ts-node ./src/server.ts

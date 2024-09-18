@@ -1,0 +1,15 @@
+ARG NODE_VERSION
+
+FROM ${NODE_VERSION}
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . /usr/src/app
+
+RUN npm install -g ts-node-dev
+
+EXPOSE ${PORT}

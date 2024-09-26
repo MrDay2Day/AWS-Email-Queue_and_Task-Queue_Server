@@ -1,8 +1,5 @@
 import http from "http";
 import { v4 as uuidv4 } from "uuid";
-import { init } from "../utils/socket";
-import { DisconnectReason } from "socket.io";
-import SocketEngine from "../app/engines/socketEngine";
 import {
   serverDataInfo,
   text_bright,
@@ -31,20 +28,6 @@ export function start_server(
       )
     );
     console.log(text_bright(`\n**************************************\n`));
-
-    const socket_io = await init(server);
-    socket_io.on("connection", (socket) => {
-      console.log(
-        `Socket connection made to ${socket.id} at ${socket.handshake.time}`
-      );
-      /**On disconnect all the socket id will be removed from all rooms */
-      socket.on("disconnect", (reason: DisconnectReason) => {
-        console.log(`Client ${socket.id} disconnected. Reason: ${reason}`);
-      });
-
-      /**On connect the socket connection is passed to socketEngine to set up all the required listeners and validate the connections */
-      SocketEngine.listenerFunc(socket, socket.request, serverInstanceId);
-    });
   });
   serverDataInfo(server);
 }

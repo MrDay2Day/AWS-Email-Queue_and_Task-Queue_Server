@@ -4,7 +4,7 @@
  * @template T - The type of the items in the queue.
  * @template R - The type of the result returned from the queueFunction.
  */
-class LineQueue<T, R> {
+export default class LineQueue<T, R> {
   /**
    * The wait time (in milliseconds) before restarting the queue after reaching the interval limit.
    * @type {number}
@@ -187,5 +187,3 @@ class LineQueue<T, R> {
     }
   }
 }
-
-export default LineQueue;

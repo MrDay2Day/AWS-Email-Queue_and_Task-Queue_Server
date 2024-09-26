@@ -1,5 +1,4 @@
 import { createToken, createSystemToken } from "../../utils/jwt";
-import { io } from "../../../utils/socket";
 
 import os from "os";
 
@@ -77,12 +76,8 @@ class Misc {
                   serverInstanceId,
                   server_status: true,
                   secondary_modules: {
-                    socket_status: io ? true : false,
-                    redis_status: !!process.env.USE_REDIS,
                     active_database: {
-                      mongodb: DBConfiguration.database_status().mongodb,
                       mysql: DBConfiguration.database_status().mysql,
-                      postgres: DBConfiguration.database_status().postgres,
                     },
                   },
                 },

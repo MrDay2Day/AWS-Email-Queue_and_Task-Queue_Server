@@ -41,7 +41,8 @@ export function generateString(length: number): string {
   }
 
   const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&!";
+    // "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&!";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let randomString = "";
 
   for (let i = 0; i < length; i++) {
@@ -50,7 +51,7 @@ export function generateString(length: number): string {
     );
   }
 
-  const string_regex_special = /[@#$%&!]/;
+  // const string_regex_special = /[@#$%&!]/;
   const string_regex_num = /[0-9]/;
   const uppercaseRegex = /[A-Z]/;
   const lowercaseRegex = /[a-z]/;
@@ -58,8 +59,8 @@ export function generateString(length: number): string {
   if (
     !uppercaseRegex.test(randomString) ||
     !string_regex_num.test(randomString) ||
-    !lowercaseRegex.test(randomString) ||
-    !string_regex_special.test(randomString)
+    !lowercaseRegex.test(randomString)
+    // || !string_regex_special.test(randomString)
   ) {
     return generateString(length);
   }
@@ -105,4 +106,55 @@ export function isStringNumber(value: string | undefined): number {
   } else {
     return 0;
   }
+}
+/**
+ * Adds the specified time to the current date based on the given string.
+ * The string should be formatted as "<number><unit>", where unit is:
+ * - 'd' for days
+ * - 'h' for hours
+ * - 'm' for minutes
+ * - 'M' for months
+ * - 'y' for years
+ *
+ * @param {string} timeString - The formatted string indicating the amount of time to add (e.g., "4d", "3m").
+ * @returns {Date} A new Date object with the added time.
+ */
+export function addTime(timeString: string): Date | string {
+  const timePattern = /^(\d+)([dhmMy])$/; // Regex to match number + unit
+  const match = timeString.trim().match(timePattern);
+
+  if (!match) {
+    throw {
+      msg: "Invalid format. Must be in the format '<number><unit>' (e.g., 4d, 3m)",
+    };
+  }
+
+  const amount = parseInt(match[1]);
+  const unit = match[2];
+
+  const newDate = new Date();
+
+  switch (unit) {
+    case "d": // days
+      newDate.setDate(newDate.getDate() + amount);
+      break;
+    case "h": // hours
+      newDate.setHours(newDate.getHours() + amount);
+      break;
+    case "m": // minutes
+      newDate.setMinutes(newDate.getMinutes() + amount);
+      break;
+    case "M": // months
+      newDate.setMonth(newDate.getMonth() + amount);
+      break;
+    case "y": // years
+      newDate.setFullYear(newDate.getFullYear() + amount);
+      break;
+    default:
+      throw new Error(
+        "Invalid time unit. Supported units are 'd', 'h', 'm', 'M', 'y'."
+      );
+  }
+
+  return newDate.toISOString();
 }

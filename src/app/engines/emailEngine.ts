@@ -7,10 +7,14 @@ import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
 
 const ses = new SESClient({
-  region: process.env.AWS_REGION,
+  region: process.env.AWS_REGION ? process.env.AWS_REGION : "",
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID
+      ? process.env.AWS_ACCESS_KEY_ID
+      : "",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+      ? process.env.AWS_SECRET_ACCESS_KEY
+      : "",
   },
 });
 
@@ -18,148 +22,90 @@ const transporter = nodemailer.createTransport({
   SES: { ses, aws: SESClient },
 });
 
-/**Based on AWS send limit email will be queued for x time until they can be sent and the queue will automatically be cleared out in a first come first server order. */
-const queueLimit = parseInt(process.env.AWS_SES_SEND_LIMIT_PER_SEC);
-const waitLimit = parseInt(process.env.AWS_SES_QUEUE_WAIT_TIME);
-let count = 0,
-  sent = 0;
+type AttachmentType = {
+  buffer: Buffer;
+  mimetype: string;
+  extension: string;
+  fileName: string;
+};
 
-interface queueObj {
-  [key: string]: unknown | any;
-}
-let queue: Array<any | { [key: string]: any | queueObj }> = [];
-let timeOutFunc: any = null;
+type AWSEmailType = {
+  id: string;
+  email: string;
+  replyEmail: string;
+  sendEmail: string;
+  shortName: string;
+  subject: string;
+  data: Record<string, any>;
+  emailAttachments: AttachmentType[];
+  template: string;
+};
 
-/**The emailing engine for a saas server, this send email raw HTML email and attachments via AWS SES.*/
+/**
+ * @typedef {Object} AttachmentType
+ * @property {Buffer} buffer - The file content in buffer format.
+ * @property {string} mimetype - The MIME type of the attachment.
+ * @property {string} extension - The file extension of the attachment.
+ * @property {string} fileName - The name of the attachment file without extension.
+ */
+
+/**
+ * @typedef {Object} AWSEmailType
+ * @property {string} id - The unique identifier for the email.
+ * @property {string} email - The recipient's email address.
+ * @property {string} replyEmail - The email address to reply to.
+ * @property {string} sendEmail - The sender's email address.
+ * @property {string} shortName - A short identifier for the sender.
+ * @property {string} subject - The subject of the email.
+ * @property {Object<string, any>} data - The dynamic data to inject into the email template.
+ * @property {AttachmentType[]} emailAttachments - Array of attachments for the email.
+ * @property {string} template - The name of the email template to use.
+ */
+
+/**
+ * EmailEngine class to send emails using AWS SES with dynamic templates.
+ */
 class EmailEngine {
   /**
-   * Sends an email using the provided data. If the email send limit is reached, adds the email to a queue.
+   * Sends an email using AWS SES.
    *
-   * @param {Object} params - The parameters for sending an email.
-   * @param {string} params.companyName - The name of the company.
-   * @param {string} params.shortName - The short name of the company.
-   * @param {string} params.email - The recipient's email address.
-   * @param {string} params.replyEmail - The reply-to email address.
-   * @param {string} params.template - The email template name.
-   * @param {string} params.subject - The email subject.
-   * @param {Object} params.data - The data to be injected into the email template.
-   * @param {boolean} [params.push=true] - Whether to push the email to the queue if the send limit is reached.
-   * @returns {Promise<{ [key: string]: any }>} - A promise that resolves with the email sending response.
-   */
-  static sendEmail = ({
-    companyName,
-    shortName,
-    email,
-    replyEmail,
-    template,
-    subject,
-    data,
-    push = true,
-  }: {
-    companyName: string;
-    shortName: string;
-    email: string;
-    replyEmail: string;
-    template: string;
-    subject: string;
-    data: Record<string, any>;
-    push?: boolean;
-  }): Promise<{ [key: string]: any }> => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const email_data = {
-          companyName,
-          shortName,
-          email,
-          replyEmail,
-          template,
-          subject,
-          data,
-          id: uuidv4(),
-          send_count: 0,
-        };
-        console.log(email_data);
-
-        // Check length of count which are emails being sent is at the send limit if so add email to queue or directly send email.
-        if (count > queueLimit) {
-          // Emails are added to a queue.
-          console.log("Added to email queue.");
-          queue.push(email_data);
-        } else {
-          count++;
-          //////////////////////////////////////////////////////////////
-          const response: any = await HelperFunctions.AWS_SEND(email_data);
-          if (response.valid) {
-            if (queue.length > 0) {
-              // Removing email from queue if it is sent.
-              queue = queue.filter((x) => x.id !== email_data.id);
-            }
-          } else {
-            const indexToUpdate = queue.findIndex(
-              (x) => x.id === email_data.id
-            );
-            queue[indexToUpdate]["send_count"]++;
-            if (queue.length > 0) {
-              if (queue[indexToUpdate]["send_count"] >= 3) {
-                // Removing email from queue if it is sent.
-                queue = queue.filter((x) => x.id !== email_data.id);
-              }
-            }
-          }
-          resolve(response);
-          //////////////////////////////////////////////////////////////
-
-          if (queue.length > 0 && sent == queueLimit) {
-            // console.log("Emails waiting before send...");
-            setTimeout(() => {
-              sent = 0;
-              count = 0;
-              HelperFunctions.trigger();
-            }, waitLimit);
-          } else if (queue.length > 0 && queue.length < queueLimit) {
-            // console.log("Cleaning up email queue.");
-            timeOutFunc = setTimeout(() => {
-              sent = 0;
-              count = 0;
-              HelperFunctions.trigger();
-            }, 1000);
-          }
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    });
-  };
-}
-
-class HelperFunctions {
-  /**
-   * Sends an email using AWS SES with the provided data.
+   * @async
+   * @function AWS_SEND
+   * @memberof EmailEngine
+   * @param {AWSEmailType} emailDetails - The email details including recipient, sender, subject, etc.
+   * @returns {Promise<Object>} Resolves with an object containing `valid: Boolean` and any additional info or error.
    *
-   * @param {Object} params - The parameters for sending an email.
-   * @param {string} params.email - The recipient's email address.
-   * @param {string} params.replyEmail - The reply-to email address.
-   * @param {string} params.subject - The email subject.
-   * @param {Object} params.data - The data to be injected into the email template.
-   * @param {string} params.template - The email template name.
-   * @param {string} params.id - The unique ID for the email.
-   * @returns {Promise<any>} - A promise that resolves with the email sending response.
+   * @example
+   * const result = await EmailEngine.AWS_SEND({
+   *   id: "12345",
+   *   email: "recipient@example.com",
+   *   replyEmail: "noreply@example.com",
+   *   sendEmail: "sender@example.com",
+   *   shortName: "CompanyName",
+   *   subject: "Welcome to our service",
+   *   data: { firstName: "John", lastName: "Doe" },
+   *   emailAttachments: [
+   *     {
+   *       buffer: fileBuffer,
+   *       mimetype: "application/pdf",
+   *       extension: "pdf",
+   *       fileName: "document"
+   *     }
+   *   ],
+   *   template: "welcome"
+   * });
    */
   static AWS_SEND = async ({
-    email, // person@gmail.com
-    replyEmail, // hr@hiltonhavana.com
-    subject, // THis is the subject of the email
-    data, // Templated data for email which will replace template string.
-    template, // the template name for the email
+    email,
+    replyEmail,
+    sendEmail,
+    shortName,
+    subject,
+    data,
+    emailAttachments,
+    template,
     id,
-  }: {
-    email: string;
-    replyEmail: string;
-    subject: string;
-    data: Record<string, any>;
-    template: string;
-    id: string;
-  }): Promise<{ valid: Boolean; [key: string]: any }> => {
+  }: AWSEmailType): Promise<{ valid: Boolean; [key: string]: any }> => {
     return new Promise(async (resolve, reject) => {
       try {
         const htmlCode = fs
@@ -169,52 +115,17 @@ class HelperFunctions {
           )
           .replace(/\n/g, "");
 
-        const attachments: Array<any | { [key: string]: any | queueObj }> = [];
-        // if (SEND_ATTACHMENTS) {
-        //   if (MULTIPLE_FILES) {
-        //     data.files.forEach((file, index) => {
-        //       const theLocation = ["pdf"].includes(file.fileExtension)
-        //         ? PDF_ATTACHMENTS_DIR
-        //         : OTHER_ATTACHMENTS_DIR;
-        //       var fileData = fs.readFileSync(
-        //         path.resolve(__dirname, ...theLocation, file.fileName)
-        //       );
-        //       attachments.push({
-        //         content: fileData,
-        //         filename: `${file.emailFileName}.${file.fileExtension}`,
-        //       });
-        //     });
-        //   } else {
-        //     const theFileForUpload = `${data.fileName}.${FILE_EXTENSION}`;
-        //     var fileData = fs.readFileSync(
-        //       // Check where file to send is located
-        //       path.resolve(
-        //         __dirname,
-        //         ...OTHER_ATTACHMENTS_DIR,
-        //         theFileForUpload
-        //       )
-        //     );
-        //     attachments.push({
-        //       content: fileData,
-        //       filename: `${data.name}.${FILE_EXTENSION}`,
-        //     });
-        //     //////////////////////////////
-        //     //  var fileData = fs.readFileSync(
-        //     //    // Check where file to send is located
-        //     //    path.resolve(__dirname, ...OTHER_ATTACHMENTS_DIR, data.fileName)
-        //     //  );
-        //     //  attachments.push({
-        //     //    content: fileData,
-        //     //    filename: `${data.name}.${
-        //     //      data.fileName.split(".")[data.fileName.split(".").length - 1]
-        //     //    }`,
-        //     //  });
-        //   }
-        // }
+        const attachments: Array<any | { [key: string]: any }> = [];
+        if (emailAttachments.length) {
+          emailAttachments.forEach((attachment) => {
+            attachments.push({
+              content: attachment.buffer,
+              filename: `${attachment.fileName}.${attachment.extension}`,
+            });
+          });
+        }
 
         let htmlString = htmlCode || "";
-
-        const email_short_name = process.env.EMAIL_SHORT_NAME;
 
         for (const ele in data) {
           const searchString = "{{-" + ele + "-}}";
@@ -224,15 +135,15 @@ class HelperFunctions {
         }
 
         const searchString = "<a";
-        const replacementString = `<a ses:tags="default:${email_short_name}-${Date.now()}" `;
+        const replacementString = `<a ses:tags="default:${shortName}-${Date.now()}" `;
         const dynamicRegex = new RegExp(searchString, "g");
         htmlString = htmlString.replace(dynamicRegex, replacementString);
 
         const params = {
-          from: `${email_short_name} <${process.env.EMAIL_SENDING_ADDRESS}>`,
+          from: `${shortName} <${sendEmail}>`,
           to: email,
           subject: `${subject}`,
-          text: `Email from - ${email_short_name}.`,
+          text: `Email from - ${shortName}.`,
           replyTo: replyEmail,
           attachments,
           html: htmlString,
@@ -255,6 +166,17 @@ class HelperFunctions {
             resolve({
               valid: true,
               dynamicDataListing,
+              data: {
+                email,
+                replyEmail,
+                sendEmail,
+                shortName,
+                subject,
+                data,
+                emailAttachments,
+                template,
+                id,
+              },
               info: {
                 envelope: info.envelope,
                 response: info.response,
@@ -264,20 +186,9 @@ class HelperFunctions {
           }
         });
       } catch (err) {
-        console.log({ err });
         resolve({ valid: false, data, err });
       }
     });
-  };
-
-  /**
-   * Triggers the sending of queued emails up to the queue limit.
-   */
-  static trigger = async () => {
-    timeOutFunc ? clearTimeout(timeOutFunc) : null;
-    for (let i = 0; i < queueLimit; i++) {
-      queue[0] ? EmailEngine.sendEmail(queue[0]) : null;
-    }
   };
 }
 

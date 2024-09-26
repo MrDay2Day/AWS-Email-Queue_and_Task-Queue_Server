@@ -1,10 +1,12 @@
 import express from "express";
 const routes = express.Router();
 
-import demoRouter from "./routers/demoRouter";
+import emailRouter from "./routers/emailRouter";
+import apiRouter from "./routers/apiRouter";
 import Misc from "./routers/utils/misc";
 
-routes.use("/demo", demoRouter);
+routes.use("/email", emailRouter);
+routes.use("/api", apiRouter);
 routes.use("/ping", Misc.ping);
 
 routes.use("/*", Misc.error404);

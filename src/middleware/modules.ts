@@ -50,7 +50,11 @@ app.use(
   helmet(),
   cookieParser(process.env.COOKIE_SECRET),
   express.urlencoded({ extended: true }),
-  express.json({ limit: "100mb" }),
+  express.json({
+    limit: `${
+      process.env.MAX_UPLOAD_SIZE ? +process.env.MAX_UPLOAD_SIZE + 5 : 20
+    }mb`,
+  }),
   compression(),
   morgan("combined")
 );

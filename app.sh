@@ -10,13 +10,7 @@ docker-prod() {
     docker-compose -f docker-compose-prod.yml up -d
     echo "Production services started."
 }
-docker-scale() {
-    echo "Starting Production services with scaling..."
-    docker-compose -f docker-compose-prod-scale.yml down --volumes --rmi all --remove-orphans
-    docker-compose -f docker-compose-prod-scale.yml --build --no-cache
-    docker-compose -f docker-compose-prod-scale.yml up -d --scale node-server=$CLUSTER_SIZE
-    echo "Production Container deployed with $CLUSTER_SIZE node(s)."
-}
+
 docker-dev() {
     echo "Starting Development services..."
     docker-compose -f docker-compose-dev.yml down --volumes --rmi all --remove-orphans
@@ -42,19 +36,19 @@ docker-remove() {
 
 # PM2 
 pm2-deploy(){
-    echo "Deploying $APP_NAME PM2 Cluster - Nodes $CLUSTER_SIZE"
+    echo "Deploying $APP_NAME PM2 Cluster - Nodes"
     npx pm2 start pm2.config.js
-    echo "Deployment successful $APP_NAME:$CLUSTER_SIZE"
+    echo "Deployment successful $APP_NAME"
 }
 pm2-restart(){
-    echo "Deploying $APP_NAME PM2 Cluster - Nodes $CLUSTER_SIZE"
+    echo "Deploying $APP_NAME PM2 Cluster - Nodes"
     npx pm2 restart $APP_NAME
-    echo "Deployment successful $APP_NAME:$CLUSTER_SIZE"
+    echo "Deployment successful $APP_NAME"
 }
 pm2-kill(){
-    echo "Stopping $APP_NAME:$CLUSTER_SIZE PM2 Cluster"
+    echo "Stopping $APP_NAME PM2 Cluster"
     npx pm2 kill
-    echo "Successfully stopped $APP_NAME:$CLUSTER_SIZE"
+    echo "Successfully stopped $APP_NAME"
 }
 
 # Check for the first argument to determine which function to run
@@ -62,17 +56,14 @@ case "$1" in
     docker-dev)
         docker-dev
         ;;
-    dev-docker-node)
-        dev-docker-node
+    docker-dev-node)
+        docker-dev-node
         ;;
     docker-remove)
         docker-remove
         ;;
     docker-prod)
         docker-prod
-        ;;
-    docker-scale)
-        docker-scale
         ;;
 
     # PM2
@@ -87,7 +78,7 @@ case "$1" in
         ;;
     *)
         echo "Invalid Input: '$1'"
-        echo "Expected Input for Docker - 'docker-dev' | 'docker-dev-node' | 'docker-remove' | 'docker-clean' | 'docker-prod' | 'docker-prod-up' | 'docker-scale' "
+        echo "Expected Input for Docker - 'docker-dev' | 'docker-dev-node' | 'docker-remove' | 'docker-clean' | 'docker-prod' | 'docker-prod-up'"
         echo "Expected Input for PM2 - 'pm2-deploy' | 'pm2-restart' | 'pm2-stop'"
         exit 1
         ;;

@@ -2,9 +2,9 @@
   "engines": {
     "node": "22.6"
   },
-  "name": "express-server",
+  "name": "email-queue-server",
   "version": "1.0.0",
-  "description": "A Boilerplate NodeJS Express Server Template written in Typescript built for scale!",
+  "description": "A server that queues up emails and sends them using AWS SES and also have a queue API that store task and after the expire date & time has reached will then send an API request to your server to notify when expired.",
   "main": "server.js",
   "scripts": {
     "start": "tsc && node code/server.js",
@@ -15,10 +15,6 @@
     "dev": "npm-run-all --parallel tsc node-dev",
     "ts-dev": "npx ts-node-dev --poll --watch ./src/* --respawn ./src/server.ts",
     "ts": "ts-node ./src/server.ts"
-  },
-  "repository": {
-    "type": "git",
-    "url": "Express-Server"
   },
   "keywords": [
     "express",
@@ -57,6 +53,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.10.1",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.7",
     "nodemon": "^2.0.22",
     "npm-run-all": "^4.1.5",

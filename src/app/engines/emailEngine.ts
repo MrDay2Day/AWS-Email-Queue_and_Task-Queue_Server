@@ -1,12 +1,12 @@
 import nodemailer from "nodemailer";
-import { SESClient } from "@aws-sdk/client-ses";
+import * as aws from "@aws-sdk/client-ses";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 
 import moment from "moment";
 
-const ses = new SESClient({
+const ses = new aws.SES({
   region: process.env.AWS_REGION ? process.env.AWS_REGION : "",
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID
@@ -19,23 +19,24 @@ const ses = new SESClient({
 });
 
 const transporter = nodemailer.createTransport({
-  SES: { ses, aws: SESClient },
+  SES: { ses, aws },
 });
 
-type AttachmentType = {
-  buffer: Buffer;
-  mimetype: string;
-  extension: string;
-  fileName: string;
+export type AttachmentType = {
+  buffer?: Buffer;
+  mimetype?: string;
+  extension?: string;
+  fileName?: string;
 };
 
-type AWSEmailType = {
+export type AWSEmailType = {
   id: string;
   email: string;
   replyEmail: string;
   sendEmail: string;
   shortName: string;
   subject: string;
+  text?: string;
   data: Record<string, any>;
   emailAttachments: AttachmentType[];
   template: string;
@@ -57,6 +58,7 @@ type AWSEmailType = {
  * @property {string} sendEmail - The sender's email address.
  * @property {string} shortName - A short identifier for the sender.
  * @property {string} subject - The subject of the email.
+ * @property {string} text - The email text if no template is provided.
  * @property {Object<string, any>} data - The dynamic data to inject into the email template.
  * @property {AttachmentType[]} emailAttachments - Array of attachments for the email.
  * @property {string} template - The name of the email template to use.
@@ -102,18 +104,27 @@ class EmailEngine {
     shortName,
     subject,
     data,
+    text,
     emailAttachments,
     template,
     id,
   }: AWSEmailType): Promise<{ valid: Boolean; [key: string]: any }> => {
     return new Promise(async (resolve, reject) => {
       try {
-        const htmlCode = fs
-          .readFileSync(
-            path.resolve(__dirname, "email_templates", `${template}.html`),
-            "utf8"
-          )
-          .replace(/\n/g, "");
+        let htmlCode = "";
+
+        if (template) {
+          try {
+            htmlCode = fs
+              .readFileSync(
+                path.resolve(__dirname, "email_templates", `${template}.html`),
+                "utf8"
+              )
+              .replace(/\n/g, "");
+          } catch (html_error) {
+            console.log({ html_error });
+          }
+        }
 
         const attachments: Array<any | { [key: string]: any }> = [];
         if (emailAttachments.length) {
@@ -125,7 +136,7 @@ class EmailEngine {
           });
         }
 
-        let htmlString = htmlCode || "";
+        let htmlString = htmlCode || text || "";
 
         for (const ele in data) {
           const searchString = "{{-" + ele + "-}}";
@@ -143,7 +154,7 @@ class EmailEngine {
           from: `${shortName} <${sendEmail}>`,
           to: email,
           subject: `${subject}`,
-          text: `Email from - ${shortName}.`,
+          text: text,
           replyTo: replyEmail,
           attachments,
           html: htmlString,
@@ -173,6 +184,7 @@ class EmailEngine {
                 shortName,
                 subject,
                 data,
+                text,
                 emailAttachments,
                 template,
                 id,

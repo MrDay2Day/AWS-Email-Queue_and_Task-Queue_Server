@@ -139,18 +139,24 @@ class CustomQueue<TaskData> {
    * queue.removeTask("task1");
    */
   removeTask(taskId: string) {
-    const found = this.tasks.find((task) => task.taskId === taskId);
-    if (found) {
-      this.tasks = this.tasks.filter((taskObj) => {
-        if (taskObj.taskId.toLowerCase() === taskId.toLowerCase()) {
-          this.emit(EmitListenTypes.REMOVE, taskObj);
-          return false;
-        }
-        return true;
-      });
-    } else {
-      throw new Error("'taskId' does not exist.");
-    }
+    return new Promise((res, rej) => {
+      const found = this.tasks.find((task) => task.taskId === taskId);
+      let removed = false;
+      if (found) {
+        this.tasks = this.tasks.filter((taskObj) => {
+          if (taskObj.taskId === taskId) {
+            this.emit(EmitListenTypes.REMOVE, taskObj);
+            removed = true;
+            return false;
+          }
+          return true;
+        });
+
+        res(removed);
+      } else {
+        rej({ msg: "'taskId' does not exist.", code: "90012" });
+      }
+    });
   }
 
   /**

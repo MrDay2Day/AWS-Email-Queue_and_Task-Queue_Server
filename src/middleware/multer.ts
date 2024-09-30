@@ -5,7 +5,7 @@ import { Request } from "express";
 const storage = multer.memoryStorage();
 const limits = {
   fileSize: process.env.MAX_UPLOAD_SIZE
-    ? +process.env.MAX_UPLOAD_SIZE
+    ? +process.env.MAX_UPLOAD_SIZE * 1000000
     : 15 * 1000000, // 100MB
 };
 
@@ -52,8 +52,8 @@ function commonFiles(req: Request, file: UploadedFileType, callback: any) {
 }
 
 // Multer Middleware
-export const common_files = multer({
+export const files = multer({
   limits,
   storage,
   fileFilter: commonFiles,
-}).fields([{ name: "common_files", maxCount: 5 }]);
+}).fields([{ name: "files", maxCount: 5 }]);

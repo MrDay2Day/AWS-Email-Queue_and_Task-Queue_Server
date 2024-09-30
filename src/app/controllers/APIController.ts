@@ -72,6 +72,7 @@ class APIController {
         throw { msg: "Not Authorized!", status: 401, code: "6341192" };
       }
       const { body } = req;
+
       const { api_key, api_name } = body as {
         api_key?: string;
         api_name?: string;

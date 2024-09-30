@@ -3,10 +3,13 @@ version: "3.9"
 name: ${APP_CONTAINER_NAME}-container-dev
 services:
   node-server:
+    restart: unless-stopped
+    networks:
+      - main_network
     environment:
       - NODE_ENV=dev
       - PORT=${PORT}
-      - APP_NAME=${APP_NAME}
+      - APP_CONTAINER_NAME=${APP_CONTAINER_NAME}
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -16,9 +19,33 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    container_name: ${APP_NAME}-Development
+    container_name: ${APP_CONTAINER_NAME}-Development
     expose:
       - ${PORT}
     ports:
       - "${PORT}:${PORT}"
     command: npx ts-node-dev --poll --watch ./src/* --respawn ./src/server.ts
+
+  mysql:
+    image: mysql:8.0
+    container_name: server-mysql
+    restart: unless-stopped
+    networks:
+      - main_network
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password # Root password
+      MYSQL_DATABASE: main_data # Default database
+      MYSQL_USER: main_user # Non-root user
+      MYSQL_PASSWORD: user_password # Non-root user password
+    volumes:
+      - mysql_data:/var/lib/mysql # Mounting persistent volume for data storage
+    ports:
+      - "3959:3306" # Expose port 3306 for MySQL
+
+networks:
+  main_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local # Use local storage for persistent data

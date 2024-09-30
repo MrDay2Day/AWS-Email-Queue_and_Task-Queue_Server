@@ -5,9 +5,7 @@ module.exports = {
     {
       name: process.env.APP_NAME,
       script: "code/server.js",
-      exec_mode: "cluster",
       watch: false,
-      instances: process.env.CLUSTER_SIZE,
     },
   ],
 };

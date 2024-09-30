@@ -1,5 +1,3 @@
-import { createToken, createSystemToken } from "../../utils/jwt";
-
 import os from "os";
 
 import { CookieOptions, NextFunction, Request, Response } from "express";
@@ -42,27 +40,6 @@ class Misc {
     };
 
     try {
-      if (!req.cookies.ping) {
-        const pingToken = await createSystemToken({
-          serverInstanceId,
-          data: new Date(Date.now()),
-        });
-
-        // Minerva Ping Token for authentication to server this stays with all devices.
-
-        res.cookie("ping", pingToken.token, options);
-      }
-
-      // Minerva System Token for authenticating devices used by user
-      if (!req.cookies.systemToken) {
-        const systemToken = await createSystemToken({
-          serverInstanceId,
-          data: new Date(Date.now()),
-        });
-
-        res.cookie("systemToken", systemToken.token, options);
-      }
-
       res
         .json(
           process.env.NODE_ENV === "production"

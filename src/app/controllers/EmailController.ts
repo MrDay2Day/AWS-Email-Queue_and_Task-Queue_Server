@@ -14,6 +14,9 @@ import { API_KEY_TYPE } from "../routers/utils/auth";
 import { Buffer } from "buffer";
 import ReturnAPIController from "./ReturnAPIController";
 
+import * as path from "path";
+import * as fs from "fs/promises";
+
 type EmailDataReturnType = AWSEmailType & {
   return_api: string;
   api_key: string;
@@ -181,6 +184,159 @@ class EmailController {
         valid: false,
         code: `EML001_${error.code || "00001"}`,
       });
+    }
+  }
+
+  static async addTemplate(
+    req: Request,
+    res: Response,
+    nex: NextFunction
+  ): Promise<any> {
+    try {
+      if (req.api_key_type !== API_KEY_TYPE.USER) {
+        throw { msg: "Not Authorized!", status: 401, code: "6341165" };
+      }
+
+      const { body, files, api_key, allowed_api } = req;
+    } catch (error: any) {
+      return res.status(error.status || 200).json({
+        msg: error.msg || error.sqlMessage || "Something went wrong.",
+        valid: false,
+        code: `EML001_${error.code || "00003"}`,
+      });
+    }
+  }
+
+  static async listTemplates(
+    req: Request,
+    res: Response,
+    nex: NextFunction
+  ): Promise<any> {
+    try {
+      if (req.api_key_type !== API_KEY_TYPE.USER) {
+        throw { msg: "Not Authorized!", status: 401, code: "6341165" };
+      }
+
+      const { body, files, api_key, allowed_api } = req;
+      const location = body?.location as string[];
+
+      const directory_files = await Helper.listFilesInDirectory(
+        location.map((x) => x.replace(/\.\./g, "").replace(/\//g, ""))
+      );
+
+      return res.status(200).json({ valid: true, directory_files });
+    } catch (error: any) {
+      return res.status(error.status || 200).json({
+        msg: error.msg || error.sqlMessage || "Something went wrong.",
+        valid: false,
+        code: `EML001_${error.code || "00003"}`,
+      });
+    }
+  }
+
+  static async removeTemplate(
+    req: Request,
+    res: Response,
+    nex: NextFunction
+  ): Promise<any> {
+    try {
+      if (req.api_key_type !== API_KEY_TYPE.USER) {
+        throw { msg: "Not Authorized!", status: 401, code: "6341165" };
+      }
+
+      const { body, files, api_key, allowed_api } = req;
+    } catch (error: any) {
+      return res.status(error.status || 200).json({
+        msg: error.msg || error.sqlMessage || "Something went wrong.",
+        valid: false,
+        code: `EML001_${error.code || "00003"}`,
+      });
+    }
+  }
+}
+
+class Helper {
+  static async writeFileToDirectory(
+    fileBuffer: Buffer,
+    fileName: string,
+    directoryPath: string
+  ) {
+    try {
+      // Ensure directory exists
+      await fs.mkdir(directoryPath, { recursive: true });
+
+      // Construct the full path for the file
+      const filePath = path.join(directoryPath, fileName);
+
+      // Write the buffer to the file
+      // @ts-ignore
+      await fs.writeFile(filePath, fileBuffer);
+      console.log(`File saved to ${filePath}`);
+    } catch (error) {
+      console.error("Error writing file:", error);
+    }
+  }
+
+  static async listFilesInDirectory(directoryPath: string[]) {
+    try {
+      await fs.mkdir(
+        path.resolve(__dirname, "..", "..", "..", "emails", ...directoryPath),
+        { recursive: true }
+      );
+      // Read all files and directories in the specified path
+      const files = await fs.readdir(
+        path.resolve(__dirname, "..", "..", "..", "emails", ...directoryPath)
+      );
+
+      const fileList = files.filter(async (file) => {
+        const fullPath = path.join(
+          path.resolve(__dirname, "..", "..", "..", "emails", ...directoryPath),
+          file
+        );
+        const stat = await fs.stat(fullPath);
+        return stat.isFile();
+      });
+
+      console.log({ files, fileList, directoryPath });
+
+      return fileList;
+    } catch (error) {
+      console.error("Error reading directory:", error);
+    }
+  }
+
+  static async deleteFileFromDirectory(
+    fileName: string,
+    directoryPath: string
+  ) {
+    try {
+      // Construct the full path to the file
+      const filePath = path.join(directoryPath, fileName);
+
+      // Delete the file
+      await fs.unlink(filePath);
+      console.log(`File ${fileName} deleted from ${directoryPath}`);
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  }
+
+  static async deleteDirectory(directoryPath: string[]) {
+    try {
+      if (directoryPath) {
+        // Use fs.rm with recursive option to delete the directory and its contents
+        await fs.rm(
+          path.resolve(__dirname, "..", "..", "..", "emails", ...directoryPath),
+          { recursive: true, force: true }
+        );
+        console.log(`Directory '${directoryPath}' deleted successfully.`);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error(`Error deleting directory '${directoryPath}':`, error);
+      return false;
     }
   }
 }

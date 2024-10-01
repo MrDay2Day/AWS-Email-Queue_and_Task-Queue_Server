@@ -19,6 +19,7 @@ function commonFiles(req: Request, file: UploadedFileType, callback: any) {
       "image/png",
       "image/jpg",
       "text/csv",
+      "text/html",
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/vnd.ms-excel",
@@ -51,9 +52,31 @@ function commonFiles(req: Request, file: UploadedFileType, callback: any) {
   }
 }
 
+function htmlFile(req: Request, file: UploadedFileType, callback: any) {
+  try {
+    const fileFormat = ["text/html"];
+    if (fileFormat.includes(file.mimetype)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+      callback(new Error("Please ensure you are uploading 1 html file."));
+    }
+  } catch (error) {
+    callback(
+      new Error("Something went wrong processing this file. Code: FL000005")
+    );
+  }
+}
+
 // Multer Middleware
 export const files = multer({
   limits,
   storage,
   fileFilter: commonFiles,
 }).fields([{ name: "files", maxCount: 5 }]);
+
+export const html = multer({
+  limits,
+  storage,
+  fileFilter: htmlFile,
+}).fields([{ name: "html", maxCount: 1 }]);

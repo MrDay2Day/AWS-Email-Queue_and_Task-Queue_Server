@@ -168,7 +168,7 @@ class CustomQueue<TaskData> {
     const now = new Date();
 
     this.tasks = this.tasks.filter((taskObj) => {
-      if (now >= taskObj.expiryDate) {
+      if (now >= new Date(taskObj.expiryDate)) {
         this.emit(EmitListenTypes.EXPIRED, taskObj);
         return false;
       }

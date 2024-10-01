@@ -2,8 +2,8 @@
   "engines": {
     "node": "22.6"
   },
-  "name": "email-queue-server",
-  "version": "1.0.0",
+  "name": "aws-email-task-queue-server",
+  "version": "0.1.0",
   "description": "A server that queues up emails and sends them using AWS SES and also have a queue API that store task and after the expire date & time has reached will then send an API request to your server to notify when expired.",
   "main": "server.js",
   "scripts": {

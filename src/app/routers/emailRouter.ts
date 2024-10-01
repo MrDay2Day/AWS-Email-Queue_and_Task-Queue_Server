@@ -1,9 +1,12 @@
 import express from "express";
 import EmailController from "../controllers/EmailController";
-import { files } from "../../middleware/multer";
+import { files, html } from "../../middleware/multer";
 
 const emailRouter = express.Router();
 
 emailRouter.post("/add", files, EmailController.addToQueue);
+emailRouter.post("/add-template", html, EmailController.addTemplate);
+emailRouter.post("/list-templates", EmailController.listTemplates);
+emailRouter.post("/remove-template", EmailController.removeTemplate);
 
 export default emailRouter;

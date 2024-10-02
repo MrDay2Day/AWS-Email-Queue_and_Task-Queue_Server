@@ -12,8 +12,6 @@ export default class ReturnAPIController {
         body: JSON.stringify(data),
       });
 
-      console.log({ raw });
-
       const resData = await raw.json();
 
       return resData;

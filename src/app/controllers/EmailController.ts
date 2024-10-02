@@ -1,14 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
-import { connect_sql } from "../../config/mysql/config";
-import { QueryResult } from "mysql2/promise";
 import LineQueue from "../engines/lineQueueEngine";
 import EmailEngine, {
   AttachmentType,
   AWSEmailType,
 } from "../engines/emailEngine";
-import { EmailClassSQL } from "../models/global/email_mysql";
-import { EmailDataTypes } from "../models/database/types/General_Types";
 import { checkJSONToData, generateString } from "../utils/helpers";
 import { API_KEY_TYPE } from "../routers/utils/auth";
 import { Buffer } from "buffer";
@@ -31,30 +26,26 @@ const rate_limit = process.env.AWS_SES_SEND_LIMIT_PER_SEC
 
 async function main_function(data: EmailDataReturnType): Promise<void> {
   try {
-    const result = await EmailEngine.AWS_SEND(data);
-    console.log({ data, result });
+    let STATUS: string = "SENT";
+    const { valid, email_data, info, err } = await EmailEngine.AWS_SEND(data);
+    console.log({ valid, email_data, info, err });
+    if (err) {
+      STATUS = "FAIL";
+    }
 
-    const res = await ReturnAPIController.post_return(
-      data.api_key,
-      data.return_api,
-      {
-        email_id: data.id,
-        email_data: {
-          email: data.email,
-          replyEmail: data.replyEmail,
-          sendEmail: data.sendEmail,
-          shortName: data.shortName,
-          subject: data.subject,
-          text: data.text,
-          data: data.data,
-          emailAttachments: data.emailAttachments,
-          template: data.template,
-        },
-      }
-    );
-
-    console.log({ res });
-    // send result to return_api
+    await ReturnAPIController.post_return(data.api_key, data.return_api, {
+      status: STATUS,
+      email_id: data.id,
+      email_data: {
+        email: data.email,
+        replyEmail: data.replyEmail,
+        sendEmail: data.sendEmail,
+        shortName: data.shortName,
+        subject: data.subject,
+        template: data.template,
+      },
+      error: err,
+    });
   } catch (error) {
     console.log({ error });
   }
@@ -64,6 +55,19 @@ const emailQueue = new LineQueue<EmailDataReturnType, void>(
   rate_limit,
   main_function
 );
+
+// emailQueue.on(
+//   "success",
+//   async ([error, res]:
+//     | [void, EmailDataReturnType]
+//     | [unknown, EmailDataReturnType]) => {
+//     try {
+//       console.log("Email Success", [error, res]);
+//     } catch (error) {
+//       console.log("Email Error", error);
+//     }
+//   }
+// );
 
 const g = generateString;
 

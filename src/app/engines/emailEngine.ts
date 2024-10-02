@@ -174,7 +174,7 @@ class EmailEngine {
             resolve({
               valid: true,
               dynamicDataListing,
-              data: {
+              email_data: {
                 email,
                 replyEmail,
                 sendEmail,

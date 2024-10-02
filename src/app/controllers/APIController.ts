@@ -1,7 +1,4 @@
-import { NextFunction, Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
-import { connect_sql } from "../../config/mysql/config";
-import { QueryResult } from "mysql2/promise";
+import { Request, Response } from "express";
 import { addTime, generateString as g } from "../utils/helpers";
 import { APIClassSQLClass } from "../models/global/api_mysql";
 import { API_KEY_TYPE } from "../routers/utils/auth";

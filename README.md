@@ -10,16 +10,18 @@ Queue all your emails for all your services in one place to send using `Amazon W
 
 You can start this serve via `TypeScript`, `NodeJs` or `Docker`.
 
-### Environment Variables
+**<< IMPORTANT >>**
 
-The environment variables are required:
+**Copy `.env.template` to `.env`.**
+
+### Environment Variables
 
 | Variable                   | Default Value              | Description                               |
 | -------------------------- | -------------------------- | ----------------------------------------- |
 | ADMIN_API_KEY              | -                          | This API Key is used to do admin actions. |
 | PORT                       | 3852                       | Port for server.                          |
 | NODE_ENV                   | dev                        | dev = Development else leave blank.       |
-| NODE_VERSION               | node:22.6                  | Node Version for dockerr.                 |
+| NODE_VERSION               | node:22.6                  | Node Version for docker.                  |
 | APP_NAME                   | Day2Day Email/Queue Server | Application name.                         |
 | APP_CONTAINER_NAME         | d2d_email_queue            | Docker container name                     |
 | MAX_UPLOAD_SIZE            | 25                         | Max upload size for server per request.   |

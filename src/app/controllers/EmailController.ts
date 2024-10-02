@@ -182,7 +182,7 @@ class EmailController {
       return res.status(error.status || 200).json({
         msg: error.msg || error.sqlMessage || "Something went wrong.",
         valid: false,
-        code: `EML001_${error.code || "00001"}`,
+        code: `EML001_${error.code || "004120"}`,
       });
     }
   }
@@ -193,16 +193,31 @@ class EmailController {
     nex: NextFunction
   ): Promise<any> {
     try {
-      if (req.api_key_type !== API_KEY_TYPE.USER) {
+      if (req.api_key_type !== API_KEY_TYPE.ADMIN) {
         throw { msg: "Not Authorized!", status: 401, code: "6341165" };
       }
 
-      const { body, files, api_key, allowed_api } = req;
+      const { files } = req;
+
+      const uploaded_files: Express.Multer.File[] = Array.isArray(files)
+        ? files
+        : typeof files === "object" && files !== undefined && "html" in files
+        ? (files["html"] as Express.Multer.File[])
+        : [];
+
+      if (uploaded_files.length > 0) {
+        const file = uploaded_files[0];
+        await Helper.writeFileToDirectory(file.buffer, file.originalname);
+      } else {
+        throw { msg: "Missing .html file.", code: "400450" };
+      }
+
+      return res.status(200).json({ valid: true });
     } catch (error: any) {
       return res.status(error.status || 200).json({
         msg: error.msg || error.sqlMessage || "Something went wrong.",
         valid: false,
-        code: `EML001_${error.code || "00003"}`,
+        code: `EML001_${error.code || "056028"}`,
       });
     }
   }
@@ -213,15 +228,16 @@ class EmailController {
     nex: NextFunction
   ): Promise<any> {
     try {
-      if (req.api_key_type !== API_KEY_TYPE.USER) {
-        throw { msg: "Not Authorized!", status: 401, code: "6341165" };
+      if (req.api_key_type !== API_KEY_TYPE.ADMIN) {
+        throw { msg: "Not Authorized!", status: 401, code: "6341177" };
       }
 
-      const { body, files, api_key, allowed_api } = req;
-      const location = body?.location as string[];
+      const { body } = req;
+      const { page, limit } = body as { page: number; limit: number };
 
       const directory_files = await Helper.listFilesInDirectory(
-        location.map((x) => x.replace(/\.\./g, "").replace(/\//g, ""))
+        page || 0,
+        limit ? (limit > 20 || limit < 5 ? 5 : limit) : 5
       );
 
       return res.status(200).json({ valid: true, directory_files });
@@ -240,103 +256,109 @@ class EmailController {
     nex: NextFunction
   ): Promise<any> {
     try {
-      if (req.api_key_type !== API_KEY_TYPE.USER) {
-        throw { msg: "Not Authorized!", status: 401, code: "6341165" };
+      if (req.api_key_type !== API_KEY_TYPE.ADMIN) {
+        throw { msg: "Not Authorized!", status: 401, code: "6341176" };
       }
 
-      const { body, files, api_key, allowed_api } = req;
+      const { body } = req;
+      const { fileName } = body as { fileName: string };
+
+      if (!fileName) {
+        throw { msg: "Missing field: {fileName: string}", code: "400771" };
+      }
+
+      await Helper.deleteFileFromDirectory(fileName);
+
+      return res.status(200).json({ valid: true });
     } catch (error: any) {
       return res.status(error.status || 200).json({
         msg: error.msg || error.sqlMessage || "Something went wrong.",
         valid: false,
-        code: `EML001_${error.code || "00003"}`,
+        code: `EML001_${error.code || "000034"}`,
       });
     }
   }
 }
 
 class Helper {
-  static async writeFileToDirectory(
-    fileBuffer: Buffer,
-    fileName: string,
-    directoryPath: string
-  ) {
+  static async writeFileToDirectory(fileBuffer: Buffer, fileName: string) {
     try {
-      // Ensure directory exists
-      await fs.mkdir(directoryPath, { recursive: true });
+      if (!fileName.endsWith(".html")) {
+        throw new Error("Invalid file type. Only .html files are allowed.");
+      }
 
-      // Construct the full path for the file
-      const filePath = path.join(directoryPath, fileName);
+      console.log({ fileBuffer, fileName });
 
-      // Write the buffer to the file
-      // @ts-ignore
-      await fs.writeFile(filePath, fileBuffer);
+      const filePath = path.join(
+        path.resolve(__dirname, "..", "..", "..", "emails"),
+        fileName
+      );
+
+      const uint8ArrayBuffer = new Uint8Array(fileBuffer);
+
+      console.log({ uint8ArrayBuffer });
+      await fs.writeFile(filePath, uint8ArrayBuffer);
       console.log(`File saved to ${filePath}`);
+      return true;
     } catch (error) {
       console.error("Error writing file:", error);
+      throw { msg: error, code: "400020" };
     }
   }
 
-  static async listFilesInDirectory(directoryPath: string[]) {
+  static async listFilesInDirectory(page: number, limit: number) {
     try {
-      await fs.mkdir(
-        path.resolve(__dirname, "..", "..", "..", "emails", ...directoryPath),
-        { recursive: true }
-      );
-      // Read all files and directories in the specified path
-      const files = await fs.readdir(
-        path.resolve(__dirname, "..", "..", "..", "emails", ...directoryPath)
-      );
-
-      const fileList = files.filter(async (file) => {
-        const fullPath = path.join(
-          path.resolve(__dirname, "..", "..", "..", "emails", ...directoryPath),
-          file
-        );
-        const stat = await fs.stat(fullPath);
-        return stat.isFile();
+      await fs.mkdir(path.resolve(__dirname, "..", "..", "..", "emails"), {
+        recursive: true,
       });
+      const files = await fs.readdir(
+        path.resolve(__dirname, "..", "..", "..", "emails")
+      );
 
-      console.log({ files, fileList, directoryPath });
+      const fileList = (
+        await Promise.all(
+          files.map(async (file) => {
+            const fullPath = path.join(
+              path.resolve(__dirname, "..", "..", "..", "emails"),
+              file
+            );
+            const stat = await fs.stat(fullPath);
+            return stat.isFile() && file.endsWith(".html") ? file : null;
+          })
+        )
+      ).filter(Boolean); // Filter out any null values
 
-      return fileList;
+      return {
+        templates: fileList.slice((page - 1) * limit, limit * page),
+        count: fileList.length,
+        total_pages: Math.ceil(fileList.length / limit),
+      };
     } catch (error) {
       console.error("Error reading directory:", error);
+      throw { msg: error, code: "400021" };
     }
   }
 
-  static async deleteFileFromDirectory(
-    fileName: string,
-    directoryPath: string
-  ) {
+  static async deleteFileFromDirectory(fileName: string) {
     try {
-      // Construct the full path to the file
-      const filePath = path.join(directoryPath, fileName);
+      const filePath = path.join(
+        path.resolve(__dirname, "..", "..", "..", "emails"),
+        fileName
+      );
 
-      // Delete the file
       await fs.unlink(filePath);
-      console.log(`File ${fileName} deleted from ${directoryPath}`);
-    } catch (error) {
+      console.log(`File ${fileName} deleted.`);
+      return true;
+    } catch (error: any) {
       console.error("Error deleting file:", error);
-    }
-  }
-
-  static async deleteDirectory(directoryPath: string[]) {
-    try {
-      if (directoryPath) {
-        // Use fs.rm with recursive option to delete the directory and its contents
-        await fs.rm(
-          path.resolve(__dirname, "..", "..", "..", "emails", ...directoryPath),
-          { recursive: true, force: true }
-        );
-        console.log(`Directory '${directoryPath}' deleted successfully.`);
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      console.error(`Error deleting directory '${directoryPath}':`, error);
-      return false;
+      throw {
+        msg: error.code
+          ? error.code === "ENOENT"
+            ? "File does not exist"
+            : error
+          : error,
+        code: "400022",
+      };
     }
   }
 }

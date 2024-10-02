@@ -2,9 +2,6 @@ import nodemailer from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
 import path from "path";
 import fs from "fs";
-import { v4 as uuidv4 } from "uuid";
-
-import moment from "moment";
 
 const ses = new aws.SES({
   region: process.env.AWS_REGION ? process.env.AWS_REGION : "",

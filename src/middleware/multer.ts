@@ -76,7 +76,7 @@ export const files = multer({
 }).fields([{ name: "files", maxCount: 5 }]);
 
 export const html = multer({
-  limits,
+  limits: { fileSize: 614400 },
   storage,
   fileFilter: htmlFile,
 }).fields([{ name: "html", maxCount: 1 }]);

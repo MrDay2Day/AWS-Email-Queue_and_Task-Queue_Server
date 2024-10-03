@@ -43,6 +43,9 @@ async function main_function(data: EmailDataReturnType): Promise<void> {
         shortName: data.shortName,
         subject: data.subject,
         template: data.template,
+        data: data.data,
+        htmlText: data.text,
+        attachments: data.emailAttachments.length,
       },
       error: err,
     });
@@ -55,19 +58,6 @@ const emailQueue = new LineQueue<EmailDataReturnType, void>(
   rate_limit,
   main_function
 );
-
-// emailQueue.on(
-//   "success",
-//   async ([error, res]:
-//     | [void, EmailDataReturnType]
-//     | [unknown, EmailDataReturnType]) => {
-//     try {
-//       console.log("Email Success", [error, res]);
-//     } catch (error) {
-//       console.log("Email Error", error);
-//     }
-//   }
-// );
 
 const g = generateString;
 
@@ -139,7 +129,7 @@ class EmailController {
             file_data.buffer = file.buffer;
             // File name
             if (file.originalname) {
-              file_data.fileName = file.originalname;
+              file_data.fileName = file.originalname.split(".")[0];
             } else {
               file_data.fileName = `attachment_${file_index + 1}`;
             }
@@ -148,7 +138,7 @@ class EmailController {
             file_data.extension = extension_array[1];
             // mimetype
             file_data.mimetype = file.mimetype;
-
+            // Add to attachment array for email
             emailAttachments.push(file_data);
           } else {
             attachment_errors.push({
@@ -244,7 +234,7 @@ class EmailController {
         limit ? (limit > 20 || limit < 5 ? 5 : limit) : 5
       );
 
-      return res.status(200).json({ valid: true, directory_files });
+      return res.status(200).json({ valid: true, ...directory_files });
     } catch (error: any) {
       return res.status(error.status || 200).json({
         msg: error.msg || error.sqlMessage || "Something went wrong.",

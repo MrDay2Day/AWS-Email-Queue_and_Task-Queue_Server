@@ -10,9 +10,13 @@ Queue all your emails for all your services in one place to send using `Amazon W
 
 You can start this serve via `TypeScript`, `NodeJs` or `Docker`.
 
-**<< IMPORTANT >>**
+**IMPORTANT ACTION**
 
 **Copy `.env.template` to `.env`.**
+
+```bash
+cp .env.template .env
+```
 
 ### Environment Variables
 
@@ -29,12 +33,16 @@ You can start this serve via `TypeScript`, `NodeJs` or `Docker`.
 | AWS_ACCESS_KEY_ID          | -                          | AWS SMTP Settings.                        |
 | AWS_SECRET_ACCESS_KEY      | -                          | AWS SMTP Settings.                        |
 | AWS_SES_SEND_LIMIT_PER_SEC | 10                         | 10 emails pre second.                     |
-| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before send next set.    |
+| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch.       |
 | MYSQL_HOST                 | server-mysql               | Default for docker.                       |
 | MYSQL_USER                 | root                       | Default for docker.                       |
 | MYSQL_PASS                 | root_password              | Default for docker.                       |
 | MYSQL_PORT                 | 3959                       | Default for docker.                       |
 | MYSQL_DB                   | d2d_email_queue            | Default for docker.                       |
+
+<br/>
+<br/>
+<br/>
 
 ## Development
 
@@ -43,6 +51,8 @@ You can start this serve via `TypeScript`, `NodeJs` or `Docker`.
 ### TypeScript
 
 Using your local system using:
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 **Step 1** - Continuos integration
 
@@ -56,9 +66,13 @@ npm ci
 npm run ts-dev
 ```
 
+</div>
+
 ### NodeJs
 
 Using your local system compiling `TypeScript` in watch mode to `Javascript` and then listen for changes with `nodemon`:
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 **Step 1** - Continuos integration
 
@@ -86,9 +100,13 @@ then:
 npn run dev
 ```
 
+</div>
+
 ### Docker
 
 Using your local system using:
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 Using `ts-node-dev`
 
@@ -104,6 +122,11 @@ Compiling `TypeScript` in watch mode to `Javascript`
 
 </div>
 
+</div>
+<br/>
+<br/>
+<br/>
+
 ## Deployment
 
 Ensure that `NODE_ENV` is commented out or blank.
@@ -115,6 +138,8 @@ _NB: Docker deployment is recommended for deployment._
 ### TypeScript
 
 Using your local system using:
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 **Step 1** - Continuos integration
 
@@ -128,9 +153,13 @@ npm ci
 npm run ts
 ```
 
+</div>
+
 ### NodeJs
 
 Using your local system compiling `TypeScript` in watch mode to `Javascript` and then listen for changes with `nodemon`:
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 **Step 1** - Continuos integration
 
@@ -158,13 +187,85 @@ then:
 npn run start
 ```
 
+</div>
+
 ### Docker
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 This containers uses `ts-node`
 
 ```bash
 ./app.sh docker-prod
 ```
+
+</div>
+
+</div>
+
+<br/>
+<br/>
+<br/>
+
+<!--  -->
+
+# API Keys
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
+
+## Managing API Keys
+
+### Create API Key
+
+### Delete API Key
+
+</div>
+
+<br/>
+<br/>
+<br/>
+
+# Email Queue
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
+
+## Templates
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
+
+### Adding a template
+
+### Viewing all templates
+
+### Removing a template
+
+</div>
+
+## Send an email
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
+
+### Adding to email queue
+
+### Responses from email queue
+
+</div>
+
+</div>
+
+<br/>
+<br/>
+<br/>
+
+# Task Queue
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
+
+### Adding task to queue
+
+### Remove task from queue
+
+### Responses from task queue
 
 </div>
 

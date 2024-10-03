@@ -114,12 +114,19 @@ class EmailEngine {
           try {
             htmlCode = fs
               .readFileSync(
-                path.resolve(__dirname, "email_templates", `${template}.html`),
+                path.resolve(
+                  __dirname,
+                  "..",
+                  "..",
+                  "..",
+                  "emails",
+                  `${template}.html`
+                ),
                 "utf8"
               )
               .replace(/\n/g, "");
-          } catch (html_error) {
-            console.log({ html_error });
+          } catch (html_file_error) {
+            console.log({ html_file_error });
           }
         }
 

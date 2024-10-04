@@ -4,7 +4,7 @@
 
 Task Queue with Expiration and Notification API. This microservice allows you to queue tasks with an expiration date and time. It monitors these tasks and triggers a callback to your designated API once a task has expired, ensuring that your services are notified in real-time when deadlines are missed or tasks require follow-up. The expiration logic is fully customizable to meet your workflow needs, allowing seamless integration with your existing systems.
 
-Centralized Email Queue with `AWS-SES` Integration. This microservice enables centralized management of email queues across multiple services. It integrates with Amazon Web Services' Simple Email Service (`AWS-SES`) to handle all email-sending operations. Features include the ability to configure send rates based on your `AWS-SES` account limits, upload and manage `HTML` templates, and send emails with attachments. This service optimizes email delivery performance and ensures compliance with your account's rate limits, providing a scalable solution for high-volume email dispatch.
+Centralized Email Queue with `AWS-SES` Integration. This microservice enables centralized management of email queues across multiple services. It integrates with Amazon Web Services" Simple Email Service (`AWS-SES`) to handle all email-sending operations. Features include the ability to configure send rates based on your `AWS-SES` account limits, upload and manage `HTML` templates, and send emails with attachments. This service optimizes email delivery performance and ensures compliance with your account"s rate limits, providing a scalable solution for high-volume email dispatch.
 
 Both components work together to streamline task management and email delivery, offering robust and efficient handling of time-sensitive tasks and communication across your services.
 
@@ -377,10 +377,10 @@ What the server expects to see:
 
 ```bash
 {
-  fieldname: 'html',
-  originalname: 'welcome-email.html',
-  encoding: '7bit',
-  mimetype: 'text/html',
+  fieldname: "html",
+  originalname: "welcome-email.html",
+  encoding: "7bit",
+  mimetype: "text/html",
   buffer: <Buffer 3c 21 44 ... 8390 more bytes>,
   size: 8440
 }
@@ -494,15 +494,15 @@ A `JWT` will be sent back as a `Bearer` token to your server/service ensure that
 
 ```JSON
 {
-  "status": 'SENT', // SENT | FAIL
-  "email_id": 'UYdo9ZLyVGbEVjEHYDj0-ytWG8b-t94KfQ4kRyOW',
+  "status": "SENT", // SENT | FAIL
+  "email_id": "UYdo9ZLyVGbEVjEHYDj0-ytWG8b-t94KfQ4kRyOW",
   "email_data": {
-    "email": 'client@email.com',
-    "replyEmail": 'donotreply@company.com',
-    "sendEmail": 'service@company.com',
-    "shortName": 'Company Name',
-    "subject": 'THis is the Subject',
-    "template": 'draft',
+    "email": "client@email.com",
+    "replyEmail": "donotreply@company.com",
+    "sendEmail": "service@company.com",
+    "shortName": "Company Name",
+    "subject": "THis is the Subject",
+    "template": "draft",
     "data": {
       "NAME":"John Brown",
       "ACCOUNT":238570023,
@@ -510,10 +510,10 @@ A `JWT` will be sent back as a `Bearer` token to your server/service ensure that
       "DATE": "Monday, November 4th, 2024",
       "SUPPORT_EMAIL":"support@company.com"
     },
-    "htmlText": 'Dear {{-NAME-}},\n <br/ >\n You account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues You account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues making your payment please email us at {{-SUPPORT_EMAIL-}}.\n Thank you\n Management.',
+    "htmlText": "Dear {{-NAME-}},\n <br/ >\n You account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues You account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues making your payment please email us at {{-SUPPORT_EMAIL-}}.\n Thank you\n Management.",
     "attachments": 1
   },
-  "error" : {...} // Error message if any.
+  "error" : {} // Error message if any.
 }
 ```
 

@@ -41,6 +41,7 @@ VALUE_1=$(generate_string 5)
 VALUE_2=$(generate_string 12)  
 VALUE_3=$(generate_string 8)  
 VALUE_4=$(generate_string 20)  
+SALT=$(generate_string 120)  
 
 API_KEY="${VALUE_1}-${VALUE_2}_${VALUE_3}.${VALUE_4}"
 
@@ -60,6 +61,15 @@ else
   echo "ADMIN_API_KEY=$API_KEY" >> .env
 fi
 
+# Check if SALT already exists in the .env file
+if grep -q "SALT=" .env; then
+  # If it exists, replace the existing SALT value
+  sed -i "s/^SALT=.*/SALT=$SALT/" .env
+else
+  # If it doesn't exist, append the new SALT
+  echo "SALT=$SALT" >> .env
+fi
+
 # Optional: Confirm the change in .env
 echo ""
-echo "Updated .env with MAIN_API_KEY: $(grep 'API_KEY' .env)"
+echo "Updated .env with MAIN_API_KEY: $(grep 'API_KEY' .env) & SALT: $(grep 'SALT' .env)"

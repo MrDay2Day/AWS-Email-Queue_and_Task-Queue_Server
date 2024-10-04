@@ -8,6 +8,9 @@ declare global {
     interface ProcessEnv {
       // Admin API Key
       ADMIN_API_KEY: string;
+      // JWT
+      SALT: string;
+      JWT_EXP_HRS: string;
       // General
       PORT: string;
       NODE_ENV: string;

@@ -28,6 +28,8 @@ cp .env.template .env
 | PORT                       | 3852                       | Port for server.                          |
 | NODE_ENV                   | dev                        | dev = Development else leave blank.       |
 | NODE_VERSION               | node:22.6                  | Node Version for docker.                  |
+| JWT_EXP_HRS                | 3                          | Expire time for JWT in hrs.               |
+| SALT                       | -                          | Secret SALT to create JWT.                |
 | APP_NAME                   | Day2Day Email/Queue Server | Application name.                         |
 | APP_CONTAINER_NAME         | d2d_email_queue            | Docker container name                     |
 | MAX_UPLOAD_SIZE            | 25                         | Max upload size for server per request.   |
@@ -361,7 +363,7 @@ Example:
 
 ### Adding a template
 
-Make a `FormData` `POST` request to the Email/Queue Server with just the file. The filename of the html file will also be the template name.
+Make a `Form-data` `POST` request to the Email/Queue Server with just the file. The filename of the html file will also be the template name.
 
 `{{SERVER}}/server/email/add-template`
 
@@ -453,11 +455,67 @@ or
 
 ## Send an email
 
+Emails are sent as `From-data` by using the generated API Key as `Bearer` Token in the `Authorization` Header. `ADMIN_API_KEY` cannot send emails.
+
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 ### Adding to email queue
 
+`Form-data` fields required for adding an email to the email queue.
+
+`{{SERVER}}/server/email/add`
+
+| Key        | Type        | Required | Description                                                      |
+| ---------- | ----------- | -------- | ---------------------------------------------------------------- |
+| shortName  | string      | Yes      | Senders Name.                                                    |
+| email      | string      | Yes      | Recipient Email.                                                 |
+| sendEmail  | string      | Yes      | The sending email.                                               |
+| replyEmail | string      | Yes      | Email recipient can reply to.                                    |
+| subject    | string      | Yes      | The subject of the email.                                        |
+| data       | JSON String | Yes      | Template data for email.                                         |
+| text       | string      | Yes      | Template string that is sent in-place of the template.           |
+| template   | string      | Yes      | Name of template eg: If template is "test.html" then type "test" |
+| files      | file/buffer |          | file/buffer[] of files for attachment.                           |
+
+**Response**
+
+```JSON
+{
+    "queue_id": "UYdo9ZLyVGbEVjEHYDj0-ytWG8b-t94KfQ4kRyOW",
+    "valid": true
+}
+```
+
 ### Responses from email queue
+
+If the email is sent or failed your server/service will be notified at the "return_api" that was set when creating your API Key.
+
+A `JWT` will be sent back as a `Bearer` token to your server/service ensure that your server/service has the same secret `SALT` to verify the token signature.
+
+```JSON
+{
+  "status": 'SENT', // SENT | FAIL
+  "email_id": 'UYdo9ZLyVGbEVjEHYDj0-ytWG8b-t94KfQ4kRyOW',
+  "email_data": {
+    "email": 'client@email.com',
+    "replyEmail": 'donotreply@company.com',
+    "sendEmail": 'service@company.com',
+    "shortName": 'Company Name',
+    "subject": 'THis is the Subject',
+    "template": 'draft',
+    "data": {
+      "NAME":"John Brown",
+      "ACCOUNT":238570023,
+      "BALANCE": "$345,600,00",
+      "DATE": "Monday, November 4th, 2024",
+      "SUPPORT_EMAIL":"support@company.com"
+    },
+    "htmlText": 'Dear {{-NAME-}},\n <br/ >\n You account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues You account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues making your payment please email us at {{-SUPPORT_EMAIL-}}.\n Thank you\n Management.',
+    "attachments": 1
+  },
+  "error" : {...} // Error message if any.
+}
+```
 
 </div>
 
@@ -469,13 +527,115 @@ or
 
 # Task Queue
 
+Task can only be added to queue using the generated API Key as `Bearer` Token in the `Authorization` Header. `ADMIN_API_KEY` cannot send emails.
+
+A `JWT` will be sent back as a `Bearer` token to your server/service ensure that your server/service has the same secret `SALT` to verify the token signature.
+
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 ### Adding task to queue
 
+To add a task to the queue is simply done by sending a `POST` request with the following variables
+
+| Variable   | Description                             |
+| ---------- | --------------------------------------- |
+| data       | Object with key value pairs.            |
+| expiryDate | A `timestamp` for expire date and time. |
+
+**Request**
+
+```JSON
+{
+    "data": {
+        "hello": "world",
+        "foo": "bar",
+        "value": 1234567890
+    },
+    "expiryDate": "2024-10-01T20:44:48.858Z"
+}
+```
+
+**Response**
+
+```JSON
+{
+    "taskId": "328V32KoEOuy8zLs4pdP-RY8oh9-ep68NY786RsD",
+    "valid": true
+}
+```
+
 ### Remove task from queue
 
+To remove a task to the queue is simply done by sending a `POST` request with the following variables
+
+| Variable | Description               |
+| -------- | ------------------------- |
+| queue_id | Queue ID for task queued. |
+
+**Request**
+
+```JSON
+{
+    "queue_id": "328V32KoEOuy8zLs4pdP-RY8oh9-ep68NY786RsD"
+}
+```
+
+**Response** - Success
+
+```JSON
+{
+    "removed": true,
+    "valid": true
+}
+```
+
+**Response** - Error
+
+```JSON
+{
+    "removed": false,
+    "msg": "'taskId' does not exist.",
+    "valid": false,
+    "code": "QUE001_90012"
+}
+```
+
 ### Responses from task queue
+
+When actions are triggered by the queue where a task has been added, manually removed or expired notification is sent to your server/service of the action this is sent to the corresponding `return_api` for the API Key that executed the task.
+
+When a new task is added to the queue:
+
+```JSON
+{
+  "queue_id": "qA5Bz-rly3vMUccmHP_mLW25Xjf.SpXIflHVcg4RF5XJ8MTv",
+  "expire_data": "2024-11-01T20:44:48.858Z",
+  "event": "ADD",
+  "data": { "hello": "world", "foo": "bar", "value": 1234567890 }
+},
+```
+
+When a new task is manually removed from the queue:
+
+```JSON
+{
+  "queue_id": "qA5Bz-rly3vMUccmHP_mLW25Xjf.SpXIflHVcg4RF5XJ8MTv",
+  "expire_data": "2024-11-01T20:44:48.858Z",
+  "event": "REMOVE",
+  "data": { "hello": "world", "foo": "bar", "value": 1234567890 }
+},
+```
+
+When a new task has expired:
+
+```JSON
+{
+  "queue_id": "qA5Bz-rly3vMUccmHP_mLW25Xjf.SpXIflHVcg4RF5XJ8MTv",
+  "expire_data": "2024-11-01T20:44:48.858Z",
+  "event": "EXPIRED",
+  "data": { "hello": "world", "foo": "bar", "value": 1234567890 }
+},
+```
 
 </div>
 

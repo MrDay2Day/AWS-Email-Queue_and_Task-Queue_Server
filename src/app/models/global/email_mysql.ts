@@ -204,6 +204,29 @@ export class EmailClassSQL implements EmailDataTypes {
     }
   }
 
+  async fetchInfoByApiKey(api_key: string, limit: number, offset: number) {
+    const sql = await connect_sql();
+
+    try {
+      if (!api_key || !limit || !offset) {
+        throw { msg: "Missing fields." };
+      }
+
+      const [fetched] = (await sql.query(
+        `SELECT * FROM email WHERE api_key = ? ORDER BY created_at LIMIT ? OFFSET ?`,
+        [api_key, limit, limit * (offset - 1)]
+      )) as SelectEmailDataTypes[];
+
+      const records: EmailDataTypes[] | null | undefined = fetched;
+
+      return records;
+    } catch (err) {
+      throw err;
+    } finally {
+      sql.end();
+    }
+  }
+
   returnData() {
     return {
       status: this.status,

@@ -14,9 +14,6 @@ export default class TrackerController {
       res.writeHead(200, {
         "Content-Type": "image/gif",
         "Content-Length": "43",
-        "Cache-Control": "private, no-cache, no-store, must-revalidate",
-        Expires: "0",
-        Pragma: "no-cache",
       });
       res.end(Buffer.from("R0lGODlhAQABAAAAACwAAAAAAQABAAA=", "base64"));
 
@@ -24,11 +21,11 @@ export default class TrackerController {
       const email_record = new EmailClassSQL();
       await email_record.fetchInfo({ id: emailId });
       if (!email_record.open) {
-        console.log({ emailId, before: email_record.returnData() });
+        // console.log({ emailId, before: email_record.returnData() });
 
         await email_record.emailOpen();
 
-        console.log({ emailId, after: email_record.returnData() });
+        // console.log({ emailId, after: email_record.returnData() });
 
         await ReturnAPIController.post_return(
           email_record.returnData().api_key,

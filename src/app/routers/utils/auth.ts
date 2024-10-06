@@ -75,7 +75,7 @@ export async function auth(
       }
     }
 
-    console.log({ api_info: record_data });
+    // console.log({ api_info: record_data });
     req.api_key = record_data.api_key as string;
     req.api_key_type = API_KEY_TYPE.USER;
     req.allowed_api = record_data.return_api as string;

@@ -12,6 +12,7 @@ import ReturnAPIController from "./ReturnAPIController";
 import * as path from "path";
 import * as fs from "fs/promises";
 import { EmailClassSQL } from "../models/global/email_mysql";
+import { EmailDataTypes } from "../models/database/types/General_Types";
 
 type EmailDataReturnType = AWSEmailType & {
   return_api: string;
@@ -208,6 +209,125 @@ class EmailController {
     }
   }
 
+  static async fetchEmailsRecords(
+    req: Request,
+    res: Response,
+    nex: NextFunction
+  ): Promise<any> {
+    try {
+      if (req.api_key_type !== API_KEY_TYPE.USER) {
+        throw { msg: "Not Authorized!", status: 401, code: "4000622" };
+      }
+
+      const { api_key, body } = req;
+      let { page, amount } = body as { page: number; amount: number };
+
+      if (!page || !amount || page < 1 || amount < 10 || amount > 50) {
+        throw { msg: "Invalid entries", code: "500321" };
+      }
+
+      const email_record = new EmailClassSQL();
+      const raw_results = await email_record.fetchInfoByApiKey(
+        api_key,
+        amount < 10 || amount > 50 ? 10 : amount,
+        page < 1 ? 1 : page
+      );
+
+      const result_to_send: any = [];
+
+      raw_results?.forEach((result) => {
+        result_to_send.push({
+          email_id: result.id,
+          email: result.email,
+          send_email: result.send_email,
+          subject: result.subject,
+          data: result.data,
+          open: !!result.open,
+          created_at: result.created_at,
+          updated_at: result.updated_at,
+          api_key: `xxxxx-xxxxxxxxxxxx_xxxxxxxx.${
+            result.api_key.split(".")[1]
+          }`,
+        });
+      });
+
+      return res.status(200).json({ valid: true, result: result_to_send });
+    } catch (error: any) {
+      return res.status(error.status || 200).json({
+        msg: error.msg || error.sqlMessage || "Something went wrong.",
+        valid: false,
+        code: `EML001_${error.code || "6011231"}`,
+      });
+    }
+  }
+
+  static async fetchSpecificEmails(
+    req: Request,
+    res: Response,
+    nex: NextFunction
+  ): Promise<any> {
+    try {
+      if (req.api_key_type !== API_KEY_TYPE.USER) {
+        throw { msg: "Not Authorized!", status: 401, code: "4000501" };
+      }
+
+      const { email_ids } = req.body;
+
+      const ids_to_find: string[] = [];
+
+      if (
+        !email_ids ||
+        !Array.isArray(email_ids) ||
+        email_ids.length < 1 ||
+        email_ids.length > 30
+      ) {
+        throw { msg: "Invalid entries", code: "500211" };
+      }
+
+      email_ids.forEach((id) => {
+        if (!ids_to_find.includes(id)) {
+          if (typeof id === "string") {
+            ids_to_find.push(id);
+          }
+        }
+      });
+
+      if (ids_to_find.length < 1) {
+        throw { msg: "No 'email_id' found.", code: "500212" };
+      }
+
+      const result: any[] = [];
+
+      for (let the_id in ids_to_find) {
+        const email_record = new EmailClassSQL();
+        await email_record.fetchInfo({ id: ids_to_find[the_id] });
+        if (email_record.id) {
+          result.push({
+            email_id: email_record.returnData().id,
+            email: email_record.returnData().email,
+            send_email: email_record.returnData().send_email,
+            subject: email_record.returnData().subject,
+            data: email_record.returnData().data,
+            open: !!email_record.returnData().open,
+            created_at: email_record.returnData().created_at,
+            updated_at: email_record.returnData().updated_at,
+            api_key: `xxxxx-xxxxxxxxxxxx_xxxxxxxx.${
+              email_record.returnData().api_key.split(".")[1]
+            }`,
+          });
+        }
+      }
+
+      return res.status(200).json({ valid: true, result });
+    } catch (error: any) {
+      return res.status(error.status || 200).json({
+        msg: error.msg || error.sqlMessage || "Something went wrong.",
+        valid: false,
+        code: `EML001_${error.code || "6011230"}`,
+      });
+    }
+  }
+
   static async addTemplate(
     req: Request,
     res: Response,
@@ -308,8 +428,6 @@ class Helper {
         throw new Error("Invalid file type. Only .html files are allowed.");
       }
 
-      console.log({ fileBuffer, fileName });
-
       const filePath = path.join(
         path.resolve(__dirname, "..", "..", "..", "emails"),
         fileName
@@ -317,9 +435,7 @@ class Helper {
 
       const uint8ArrayBuffer = new Uint8Array(fileBuffer);
 
-      console.log({ uint8ArrayBuffer });
       await fs.writeFile(filePath, uint8ArrayBuffer);
-      console.log(`File saved to ${filePath}`);
       return true;
     } catch (error) {
       console.error("Error writing file:", error);
@@ -368,7 +484,6 @@ class Helper {
       );
 
       await fs.unlink(filePath);
-      console.log(`File ${fileName} deleted.`);
       return true;
     } catch (error: any) {
       console.error("Error deleting file:", error);

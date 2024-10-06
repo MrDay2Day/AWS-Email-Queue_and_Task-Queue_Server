@@ -581,6 +581,8 @@ A `JWT` will be sent back as a `Bearer` token to your server/service ensure that
 
 To add a task to the queue is simply done by sending a `POST` request with the following variables
 
+`{{SERVER}}/server/queue/add`
+
 | Variable   | Description                                     |
 | ---------- | ----------------------------------------------- |
 | data       | Object with key value pairs.                    |
@@ -611,6 +613,8 @@ To add a task to the queue is simply done by sending a `POST` request with the f
 ### Remove task from queue
 
 To remove a task to the queue is simply done by sending a `POST` request with the following variables
+
+`{{SERVER}}/server/queue/remove`
 
 | Variable | Description               |
 | -------- | ------------------------- |

@@ -26,7 +26,7 @@ cp .env.template .env
 | -------------------------- | -------------------------- | ----------------------------------------------- |
 | ADMIN_API_KEY              | -                          | This API Key is used to do admin actions.       |
 | PORT                       | 3852                       | Port for server.                                |
-| NODE_ENV                   | dev                        | dev = Development else leave blank.             |
+| NODE_ENV                   | dev                        | Either 'dev' or 'production'.                   |
 | NODE_VERSION               | node:22.6                  | Node Version for docker.                        |
 | APP_NAME                   | Day2Day Email/Queue Server | Application name.                               |
 | APP_URL                    | -                          | The domain for the server eg: https://a.bcd.com |

@@ -9,21 +9,21 @@ import { APIKeyTypes } from "../database/types/General_Types";
 type SelectEmailDataTypes = QueryResult & [APIKeyTypes];
 
 export class APIClassSQLClass implements APIKeyTypes {
-  id: string | null;
-  api_key: string | null;
-  api_name: string | null;
-  return_api: string | null;
-  temporary: Boolean | null;
-  expire_date: Date | null;
-  created_at: Date | null;
+  id: string;
+  api_key: string;
+  api_name: string;
+  return_api: string;
+  temporary: Boolean;
+  expire_date: Date;
+  created_at: Date;
   constructor() {
-    this.id = null;
-    this.api_key = null;
-    this.api_name = null;
-    this.return_api = null;
-    this.temporary = null;
-    this.expire_date = null;
-    this.created_at = null;
+    this.id = "";
+    this.api_key = "";
+    this.api_name = "";
+    this.return_api = "";
+    this.temporary = false;
+    this.expire_date = new Date();
+    this.created_at = new Date();
   }
 
   async newAPIKey(record: {

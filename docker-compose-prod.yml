@@ -1,6 +1,6 @@
 version: "3.9"
 
-name: ${APP_CONTAINER_NAME}-container
+name: ${APP_CONTAINER_NAME}-container-prod
 services:
   node-server:
     environment:
@@ -20,10 +20,12 @@ services:
       - ${PORT}
     ports:
       - "${PORT}:${PORT}"
-    command: npx ts-node ./src/server.ts
+    command: /bin/sh -c "sleep 20 && npx ts-node ./src/server.ts
     restart: unless-stopped
     networks:
       - main_network
+    depends_on:
+      - server-mysql
 
   mysql:
     image: mysql:8.0

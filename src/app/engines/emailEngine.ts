@@ -16,7 +16,10 @@ const ses = new aws.SES({
 });
 
 const transporter = nodemailer.createTransport({
-  SES: { ses, aws },
+  SES: {
+    ses,
+    aws,
+  },
 });
 
 export type AttachmentType = {
@@ -149,8 +152,16 @@ class EmailEngine {
           htmlString = htmlString.replace(dynamicRegex, replacementString);
         }
 
+        if (process.env.APP_URL) {
+          const trackerString = "{{-TRACKER-}}";
+
+          const trackerTag = `<img src="${process.env.APP_URL}/identifier?id=${id}" width="1" height="1" style="display:none;" />`;
+          const dynamicRegexTracker = new RegExp(trackerString, "g");
+          htmlString = htmlString.replace(dynamicRegexTracker, trackerTag);
+        }
+
         const searchString = "<a";
-        const replacementString = `<a ses:tags="default:${shortName}-${Date.now()}" `;
+        const replacementString = `<a ses:tags="${shortName}-${id}" `;
         const dynamicRegex = new RegExp(searchString, "g");
         htmlString = htmlString.replace(dynamicRegex, replacementString);
 
@@ -162,6 +173,9 @@ class EmailEngine {
           replyTo: replyEmail,
           attachments,
           html: htmlString,
+          ses: {
+            ConfigurationSetName: process.env.AWS_CONFIG_SET_NAME || "default",
+          },
         };
 
         const dynamicDataListing: Record<string, any> = {};

@@ -11,6 +11,7 @@ import ReturnAPIController from "./ReturnAPIController";
 
 import * as path from "path";
 import * as fs from "fs/promises";
+import { EmailClassSQL } from "../models/global/email_mysql";
 
 type EmailDataReturnType = AWSEmailType & {
   return_api: string;
@@ -26,31 +27,57 @@ const rate_limit = process.env.AWS_SES_SEND_LIMIT_PER_SEC
 
 async function main_function(data: EmailDataReturnType): Promise<void> {
   try {
-    let STATUS: string = "SENT";
+    let STATUS: string = "PROCESSING";
     const { valid, email_data, info, err } = await EmailEngine.AWS_SEND(data);
-    console.log({ valid, email_data, info, err });
+
     if (err) {
       STATUS = "FAIL";
     }
 
-    await ReturnAPIController.post_return(data.api_key, data.return_api, {
-      status: STATUS,
-      email_id: data.id,
-      email_data: {
+    const email_record = new EmailClassSQL();
+    if (info) {
+      await email_record.newRecord({
+        id: data.id,
+        data: JSON.stringify(data.data),
+        message_id: info.response,
         email: data.email,
-        replyEmail: data.replyEmail,
-        sendEmail: data.sendEmail,
-        shortName: data.shortName,
+        send_email: data.sendEmail,
         subject: data.subject,
-        template: data.template,
-        data: data.data,
-        htmlText: data.text,
-        attachments: data.emailAttachments.length,
-      },
-      error: err,
-    });
+        return_api: data.return_api,
+        api_key: data.api_key,
+      });
+
+      await ReturnAPIController.post_return(data.api_key, data.return_api, {
+        status: STATUS,
+        email_id: email_record.id,
+        data: {
+          email_data: {
+            email: email_record.email,
+            send_email: email_record.send_email,
+            subject: email_record.subject,
+            data: email_record.data,
+            open: !!email_record.open,
+          },
+          aws_info: info,
+          error: err,
+        },
+      });
+    }
   } catch (error) {
-    console.log({ error });
+    await ReturnAPIController.post_return(data.api_key, data.return_api, {
+      status: "ERROR",
+      email_id: data.id,
+      data: {
+        email_data: {
+          email: data.email,
+          send_email: data.sendEmail,
+          subject: data.subject,
+          data: data.data,
+          open: false,
+        },
+        error,
+      },
+    });
   }
 }
 const emailQueue = new LineQueue<EmailDataReturnType, void>(

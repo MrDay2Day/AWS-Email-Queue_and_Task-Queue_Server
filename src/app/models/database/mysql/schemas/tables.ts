@@ -2,16 +2,20 @@ function createEmailTableSQL() {
   const table_name = "email";
   const script = `
 CREATE TABLE ${table_name} (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id  VARCHAR(255) PRIMARY KEY,
+  message_id VARCHAR(255) NOT NULL UNIQUE,
   data VARCHAR(255) NOT NULL,
   return_api VARCHAR(255) NOT NULL,
   api_key VARCHAR(255) NOT NULL,
-  sent BOOLEAN, 
+  email VARCHAR(255) NOT NULL,
+  send_email VARCHAR(255) NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  status VARCHAR(255) NOT NULL, 
+  open BOOLEAN NOT NULL, 
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (api_key) REFERENCES api_key(api_key)
-)
-`;
+)`;
   return { table_name, script };
 }
 
@@ -28,8 +32,7 @@ CREATE TABLE ${table_name} (
   expire_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (api_key) REFERENCES api_key(api_key)
-)
-`;
+)`;
   return { table_name, script };
 }
 
@@ -44,26 +47,25 @@ CREATE TABLE ${table_name} (
   temporary BOOLEAN, 
   expire_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-`;
+)`;
   return { table_name, script };
 }
 
 function createEmailInsertProcedureSQL() {
   const table_name = "inset_email_procedure";
   const script = `
-        CREATE PROCEDURE insert_email_procedure(
-            IN p_data VARCHAR(255),
-            IN p_return_api VARCHAR(255),
-            IN p_sent BOOLEAN
-        )
-        BEGIN
-            INSERT INTO email (data, return_api, sent)
-            VALUES (p_data, p_return_api, p_sent);
-        END;
-`;
+CREATE PROCEDURE insert_email_procedure(
+    IN p_data VARCHAR(255),
+    IN p_return_api VARCHAR(255),
+    IN p_sent BOOLEAN
+)
+BEGIN
+    INSERT INTO email (data, return_api, sent)
+    VALUES (p_data, p_return_api, p_sent);
+END;`;
   return { table_name, script };
 }
+
 function createEmailUpdateProcedureSQL() {
   const table_name = "update_sent_status";
   const script = `
@@ -80,10 +82,10 @@ BEGIN
     WHERE id = p_id;
 END$$
 
-DELIMITER ;
-`;
+DELIMITER ;`;
   return { table_name, script };
 }
+
 function createQueueInsertProcedureSQL() {
   const table_name = "insert_queue_procedure";
   const script = `
@@ -100,11 +102,10 @@ BEGIN
     VALUES (p_data, p_return_api, p_triggered, p_expire_date);
 END$$
 
-DELIMITER ;
-
-`;
+DELIMITER ;`;
   return { table_name, script };
 }
+
 function createQueueUpdateProcedureSQL() {
   const table_name = "update_triggered_status";
   const script = `
@@ -121,8 +122,7 @@ BEGIN
     WHERE id = p_id;
 END$$
 
-DELIMITER ;
-`;
+DELIMITER;`;
   return { table_name, script };
 }
 

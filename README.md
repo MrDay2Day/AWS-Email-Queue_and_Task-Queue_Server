@@ -22,27 +22,29 @@ cp .env.template .env
 
 ### Environment Variables
 
-| Variable                   | Default Value              | Description                               |
-| -------------------------- | -------------------------- | ----------------------------------------- |
-| ADMIN_API_KEY              | -                          | This API Key is used to do admin actions. |
-| PORT                       | 3852                       | Port for server.                          |
-| NODE_ENV                   | dev                        | dev = Development else leave blank.       |
-| NODE_VERSION               | node:22.6                  | Node Version for docker.                  |
-| JWT_EXP_HRS                | 3                          | Expire time for JWT in hrs.               |
-| SALT                       | -                          | Secret SALT to create JWT.                |
-| APP_NAME                   | Day2Day Email/Queue Server | Application name.                         |
-| APP_CONTAINER_NAME         | d2d_email_queue            | Docker container name                     |
-| MAX_UPLOAD_SIZE            | 25                         | Max upload size for server per request.   |
-| AWS_REGION                 | -                          | AWS SMTP Settings.                        |
-| AWS_ACCESS_KEY_ID          | -                          | AWS SMTP Settings.                        |
-| AWS_SECRET_ACCESS_KEY      | -                          | AWS SMTP Settings.                        |
-| AWS_SES_SEND_LIMIT_PER_SEC | 10                         | 10 emails pre second.                     |
-| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch.       |
-| MYSQL_HOST                 | server-mysql               | Default for docker.                       |
-| MYSQL_USER                 | root                       | Default for docker.                       |
-| MYSQL_PASS                 | root_password              | Default for docker.                       |
-| MYSQL_PORT                 | 3959                       | Default for docker.                       |
-| MYSQL_DB                   | d2d_email_queue            | Default for docker.                       |
+| Variable                   | Default Value              | Description                                     |
+| -------------------------- | -------------------------- | ----------------------------------------------- |
+| ADMIN_API_KEY              | -                          | This API Key is used to do admin actions.       |
+| PORT                       | 3852                       | Port for server.                                |
+| NODE_ENV                   | dev                        | dev = Development else leave blank.             |
+| NODE_VERSION               | node:22.6                  | Node Version for docker.                        |
+| APP_NAME                   | Day2Day Email/Queue Server | Application name.                               |
+| APP_URL                    | -                          | The domain for the server eg: https://a.bcd.com |
+| APP_CONTAINER_NAME         | d2d_email_queue            | Docker container name                           |
+| MAX_UPLOAD_SIZE            | 25                         | Max upload size for server per request.         |
+| SALT                       | -                          | Secret SALT to create JWT.                      |
+| JWT_EXP_HRS                | 3                          | Expire time for JWT in hrs.                     |
+| AWS_REGION                 | -                          | AWS SMTP Settings.                              |
+| AWS_ACCESS_KEY_ID          | -                          | AWS SMTP Settings.                              |
+| AWS_SECRET_ACCESS_KEY      | -                          | AWS SMTP Settings.                              |
+| AWS_SES_SEND_LIMIT_PER_SEC | 10                         | 10 emails pre second.                           |
+| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch.             |
+| AWS_CONFIG_SET_NAME        | email-status               | The default configuration set name for SES.     |
+| MYSQL_HOST                 | server-mysql               | Default for docker.                             |
+| MYSQL_USER                 | root                       | Default for docker.                             |
+| MYSQL_PASS                 | root_password              | Default for docker.                             |
+| MYSQL_PORT                 | 3959                       | Default for docker.                             |
+| MYSQL_DB                   | d2d_email_queue            | Default for docker.                             |
 
 <br/>
 <br/>
@@ -285,7 +287,7 @@ Required:
 
 ### Delete API Key
 
-To delete and API Key send a `POST` request with either `api_name` or `api_key` to the Email/Queue Server
+To delete and API Key send a `POST` request with either `api_name` **or** `api_key` to the Email/Queue Server
 
 `{{SERVER}}/server/api/delete`
 
@@ -375,14 +377,14 @@ Eg: If the file name is `welcome-email.html` then the template name is `welcome-
 
 What the server expects to see:
 
-```bash
+```json
 {
-  fieldname: "html",
-  originalname: "welcome-email.html",
-  encoding: "7bit",
-  mimetype: "text/html",
-  buffer: <Buffer 3c 21 44 ... 8390 more bytes>,
-  size: 8440
+  "fieldname": "html",
+  "originalname": "welcome-email.html",
+  "encoding": "7bit",
+  "mimetype": "text/html",
+  "buffer": <Buffer 3c 21 44 ... 8390 more bytes>,
+  "size": 8440,
 }
 ```
 
@@ -465,17 +467,17 @@ Emails are sent as `From-data` by using the generated API Key as `Bearer` Token 
 
 `{{SERVER}}/server/email/add`
 
-| Key        | Type        | Required | Description                                                      |
-| ---------- | ----------- | -------- | ---------------------------------------------------------------- |
-| shortName  | string      | Yes      | Senders Name.                                                    |
-| email      | string      | Yes      | Recipient Email.                                                 |
-| sendEmail  | string      | Yes      | The sending email.                                               |
-| replyEmail | string      | Yes      | Email recipient can reply to.                                    |
-| subject    | string      | Yes      | The subject of the email.                                        |
-| data       | JSON String | Yes      | Template data for email.                                         |
-| text       | string      | Yes      | Template string that is sent in-place of the template.           |
-| template   | string      | Yes      | Name of template eg: If template is "test.html" then type "test" |
-| files      | file/buffer |          | file/buffer[] of files for attachment.                           |
+| Key        | Type          | Required | Description                                                      |
+| ---------- | ------------- | -------- | ---------------------------------------------------------------- |
+| shortName  | string d      | Yes      | Senders Name.                                                    |
+| email      | string        | Yes      | Recipient Email.                                                 |
+| sendEmail  | string        | Yes      | The sending email.                                               |
+| replyEmail | string        | Yes      | Email recipient can reply to.                                    |
+| subject    | string        | Yes      | The subject of the email.                                        |
+| data       | string (JSON) | Yes      | Template data for email.                                         |
+| text       | string        | Yes      | Template string that is sent in-place of the template.           |
+| template   | string        | Yes      | Name of template eg: If template is "test.html" then type "test" |
+| files      | file/buffer   | No       | file/buffer[] of files for attachment.                           |
 
 **Response**
 
@@ -492,30 +494,72 @@ If the email is sent or failed your server/service will be notified at the "retu
 
 A `JWT` will be sent back as a `Bearer` token to your server/service ensure that your server/service has the same secret `SALT` to verify the token signature.
 
-```JSON
+### Status Breakdown
+
+| Status     | Payload                                                 | Description                                            |
+| ---------- | ------------------------------------------------------- | ------------------------------------------------------ |
+| PROCESSING | {status, email_id, data: {email_data, aws_info}}        | Email is the process of being sent.                    |
+| SENT       | {status, email_id, data: {email_data, aws_data}}        | Email sent but not delivered.                          |
+| ERROR      | {status, email_id, data: {email_data, aws_info, error}} | Error sending email.                                   |
+| DELIVERED  | {status, email_id, data: {email_data, aws_data}}        | Email Delivered.                                       |
+| OPEN       | {status, email_id, data: {email_data}}                  | Email has been opened.                                 |
+| BOUNCE     | {status, email_id, data: {email_data, aws_data}}        | Email Bounced.                                         |
+| COMPLAINT  | {status, email_id, data: {email_data, aws_data}}        | Email has been reported. (This will affect reputation) |
+
+```Javascript
 {
-  "status": "SENT", // SENT | FAIL
-  "email_id": "UYdo9ZLyVGbEVjEHYDj0-ytWG8b-t94KfQ4kRyOW",
-  "email_data": {
-    "email": "client@email.com",
-    "replyEmail": "donotreply@company.com",
-    "sendEmail": "service@company.com",
-    "shortName": "Company Name",
-    "subject": "THis is the Subject",
-    "template": "draft",
-    "data": {
-      "NAME":"John Brown",
-      "ACCOUNT":238570023,
-      "BALANCE": "$345,600,00",
-      "DATE": "Monday, November 4th, 2024",
-      "SUPPORT_EMAIL":"support@company.com"
+  "status": "...",
+  "email_id": "...",
+  "data":{
+    "email_data": {
+      "email": "...",
+      "send_email": "...",
+      "subject": "...",
+      "data": {...},
+      "open": true,
     },
-    "htmlText": "Dear {{-NAME-}},\n <br/ >\n You account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues You account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues making your payment please email us at {{-SUPPORT_EMAIL-}}.\n Thank you\n Management.",
-    "attachments": 1
-  },
-  "error" : {} // Error message if any.
+    "aws_info": {...}, // Optional:
+    "aws_data": {...}, // Optional
+    "error": {...}, // Optional
+  }
 }
 ```
+
+### Tracking Emails
+
+To track email delivery status with AWS Simple Email Service (SES) on your server, you can use Amazon SES Notifications (via SNS - Simple Notification Service) to receive events such as email delivery, bounces, complaints, and rejections. Here's how you can set this up step by step:
+
+**STEP 1 - Enable Notifications in Amazon SES**
+
+First, configure Amazon SES to send event notifications for your emails.
+
+1 - Set up an SNS Topic:
+
+- Go to the Amazon SNS console.
+- Create a new SNS Topic where SES will publish events (like delivery, bounce, or complaint notifications).
+- After creating the topic, copy the Topic ARN because you'll need it in the next step.
+- Set up SES to Publish Notifications:
+
+2 - Go to the Amazon SES console.
+
+- Create Configuration Sets (Ensure this is the same `AWS_CONFIG_SET_NAME`).
+- Under the configuration set, choose Event Destinations and add a new one.
+- For Destination Type, select SNS.
+- Choose the SNS topic you created and select which events (e.g., Delivery, Bounce, Complaint) you want SES to send to this SNS topic.
+- Attach this Configuration Set to the emails you send by specifying it in the SendEmail or SendRawEmail API call.
+
+**STEP 2 - Subscribe Your Server to the SNS Topic**
+
+Once SES publishes the notifications to SNS, you'll need to subscribe your server (which will listen for delivery statuses) to the SNS topic.
+
+Subscribe an HTTPS Endpoint to the SNS Topic:
+
+- Go back to the Amazon SNS console.
+- Choose the SNS topic you created.
+- Click on Create Subscription.
+- In Protocol, select HTTPS.
+- In Endpoint, enter your server's URL (e.g., `https://{{SERVER}}/email-status`).
+- After creating the subscription, SNS will send a confirmation request to your server's URL that will automatically be verified.
 
 </div>
 
@@ -537,10 +581,10 @@ A `JWT` will be sent back as a `Bearer` token to your server/service ensure that
 
 To add a task to the queue is simply done by sending a `POST` request with the following variables
 
-| Variable   | Description                             |
-| ---------- | --------------------------------------- |
-| data       | Object with key value pairs.            |
-| expiryDate | A `timestamp` for expire date and time. |
+| Variable   | Description                                     |
+| ---------- | ----------------------------------------------- |
+| data       | Object with key value pairs.                    |
+| expiryDate | A `timestamp` for expire date and time of task. |
 
 **Request**
 

@@ -11,6 +11,7 @@ declare global {
       // JWT
       SALT: string;
       JWT_EXP_HRS: string;
+      APP_URL: string;
       // General
       PORT: string;
       NODE_ENV: string;
@@ -29,6 +30,7 @@ declare global {
       AWS_SECRET_ACCESS_KEY: string;
       AWS_SES_SEND_LIMIT_PER_SEC: string;
       AWS_SES_QUEUE_WAIT_TIME: string;
+      AWS_CONFIG_SET_NAME: string;
     }
   }
 }

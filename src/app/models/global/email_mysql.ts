@@ -213,7 +213,7 @@ export class EmailClassSQL implements EmailDataTypes {
       }
 
       const [fetched] = (await sql.query(
-        `SELECT * FROM email WHERE api_key = ? ORDER BY created_at LIMIT ? OFFSET ?`,
+        `SELECT * FROM email WHERE api_key = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
         [api_key, limit, limit * (offset - 1)]
       )) as SelectEmailDataTypes[];
 

@@ -1,5 +1,3 @@
-version: "3.9"
-
 name: ${APP_CONTAINER_NAME}-container-prod
 services:
   node-server:

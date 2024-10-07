@@ -38,8 +38,6 @@ services:
     restart: unless-stopped
     networks:
       - main_network
-    depends_on:
-      - server-mysql
 
 networks:
   main_network:

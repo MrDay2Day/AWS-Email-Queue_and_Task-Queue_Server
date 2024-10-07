@@ -6,23 +6,23 @@ source ./.env
 docker-prod() {
     echo "Starting Production services clean..."
     docker compose -f docker-compose-prod.yml down --volumes --rmi all --remove-orphans
-    # docker compose -f docker-compose-prod.yml --build --no-cache
-    docker compose -f docker-compose-prod.yml up --build -d
+    docker compose -f docker-compose-prod.yml --build --no-cache
+    docker compose -f docker-compose-prod.yml up -d
     echo "Production services started."
 }
 
 docker-dev() {
     echo "Starting Development services..."
     docker compose -f docker-compose-dev.yml down --volumes --rmi all --remove-orphans
-    # docker compose -f docker-compose-dev.yml --build --no-cache
-    docker compose -f docker-compose-dev.yml up --build -d
+    docker compose -f docker-compose-dev.yml --build --no-cache
+    docker compose -f docker-compose-dev.yml up -d
     echo "Development started."
 }
 docker-dev-node() {
     echo "Starting Development services..."
     docker compose -f docker-compose-dev-node.yml down --volumes --rmi all --remove-orphans
-    # docker compose -f docker-compose-dev-node.yml --build --no-cache
-    docker compose -f docker-compose-dev-node.yml up --build -d
+    docker compose -f docker-compose-dev-node.yml --build --no-cache
+    docker compose -f docker-compose-dev-node.yml up -d
     echo "Development started."
 }
 docker-remove() {

@@ -18,7 +18,7 @@ services:
       - ${PORT}
     ports:
       - "${PORT}:${PORT}"
-    command: /bin/sh -c "sleep 20 && npx ts-node ./src/server.ts
+    command: /bin/sh -c "sleep 20 && npx ts-node ./src/server.ts"
     restart: unless-stopped
     networks:
       - main_network

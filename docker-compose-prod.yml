@@ -1,5 +1,21 @@
 name: ${APP_CONTAINER_NAME}-container-prod
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: server-mysql
+    restart: unless-stopped
+    networks:
+      - main_network
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password # Root password
+      MYSQL_DATABASE: main_data # Default database
+      MYSQL_USER: main_user # Non-root user
+      MYSQL_PASSWORD: user_password # Non-root user password
+    volumes:
+      - mysql_data:/var/lib/mysql # Mounting persistent volume for data storage
+    ports:
+      - "3959:3306" # Expose port 3306 for MySQL
+
   node-server:
     environment:
       - NODE_ENV=prod
@@ -24,22 +40,6 @@ services:
       - main_network
     depends_on:
       - server-mysql
-
-  mysql:
-    image: mysql:8.0
-    container_name: server-mysql
-    restart: unless-stopped
-    networks:
-      - main_network
-    environment:
-      MYSQL_ROOT_PASSWORD: root_password # Root password
-      MYSQL_DATABASE: main_data # Default database
-      MYSQL_USER: main_user # Non-root user
-      MYSQL_PASSWORD: user_password # Non-root user password
-    volumes:
-      - mysql_data:/var/lib/mysql # Mounting persistent volume for data storage
-    ports:
-      - "3959:3306" # Expose port 3306 for MySQL
 
 networks:
   main_network:

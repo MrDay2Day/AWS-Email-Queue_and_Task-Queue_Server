@@ -8,7 +8,33 @@ Centralized Email Queue with `AWS-SES` Integration. This microservice enables ce
 
 Both components work together to streamline task management and email delivery, offering robust and efficient handling of time-sensitive tasks and communication across your services.
 
-## Setup
+# Table of Content
+
+1. [Setup](#setup)
+1. [Environment Variables](#environment-variables)
+1. [Development](#deployment)
+   - [TypeScript](#typescript)
+   - [NodeJS](#nodejs)
+   - [Docker](#docker)
+1. [Deployment](#deployment)
+   - [TypeScript](#typescript-1)
+   - [NodeJS](#nodejs-1)
+   - [Docker](#docker-1)
+1. [API Keys](#api-keys)
+   - [Create API Key](#create-api-key)
+   - [Delete API Key](#delete-api-key)
+1. [Email Queue](#email-queue)
+   - [Send an Email](#send-an-email)
+     - [Adding to Email Queue](#adding-to-email-queue)
+     - [Responses from Email Queue](#responses-from-email-queue)
+   - [Email Status Notification Breakdown](#email-notification-status-breakdown)
+   - [Tracking Emails](#tracking-emails)
+1. [Task Queue](#api-keys)
+   - [Add Task to Queue](#adding-task-to-queue)
+   - [Remove Task from Queue](#remove-task-from-queue)
+   - [Notifications from Task Queue](#notifications-from-task-queue)
+
+# Setup
 
 You can start these serve via `TypeScript` using `ts-node`, `NodeJs` Compiled `TypeScript` to `JavaScript` or `Docker` for the quickest deployment.
 
@@ -20,7 +46,7 @@ You can start these serve via `TypeScript` using `ts-node`, `NodeJs` Compiled `T
 cp .env.template .env
 ```
 
-### Environment Variables
+# Environment Variables
 
 | Variable                   | Default Value              | Description                                     |
 | -------------------------- | -------------------------- | ----------------------------------------------- |
@@ -54,7 +80,7 @@ cp .env.template .env
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
-### TypeScript
+## TypeScript
 
 Using your local system using:
 
@@ -74,7 +100,7 @@ npm run ts-dev
 
 </div>
 
-### NodeJs
+## NodeJs
 
 Using your local system compiling `TypeScript` in watch mode to `Javascript` and then listen for changes with `nodemon`:
 
@@ -108,7 +134,7 @@ npn run dev
 
 </div>
 
-### Docker
+## Docker
 
 Using your local system using:
 
@@ -141,7 +167,7 @@ _NB: Docker deployment is recommended for deployment._
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
-### TypeScript
+## TypeScript
 
 Using your local system using:
 
@@ -161,7 +187,7 @@ npm run ts
 
 </div>
 
-### NodeJs
+## NodeJs
 
 Using your local system compiling `TypeScript` in watch mode to `Javascript` and then listen for changes with `nodemon`:
 
@@ -195,7 +221,7 @@ npn run start
 
 </div>
 
-### Docker
+## Docker
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
@@ -221,9 +247,7 @@ API Keys are managed using the `ADMIN_API_KEY` as `Bearer` Token in the `Authori
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
-## Managing API Keys
-
-### Create API Key
+## Create API Key
 
 Send a `POST` request to the Email/Queue Server
 
@@ -285,7 +309,7 @@ Required:
 }
 ```
 
-### Delete API Key
+## Delete API Key
 
 To delete and API Key send a `POST` request with either `api_name` **or** `api_key` to the Email/Queue Server
 
@@ -494,7 +518,7 @@ If the email is sent or failed your server/service will be notified at the "retu
 
 A `JWT` will be sent back as a `Bearer` token to your server/service ensure that your server/service has the same secret `SALT` to verify the token signature.
 
-### Status Breakdown
+## Email Notification Status Breakdown
 
 | Status     | Payload                                                 | Description                                            |
 | ---------- | ------------------------------------------------------- | ------------------------------------------------------ |
@@ -525,7 +549,7 @@ A `JWT` will be sent back as a `Bearer` token to your server/service ensure that
 }
 ```
 
-### Tracking Emails
+## Tracking Emails
 
 To track email delivery status with AWS Simple Email Service (SES) on your server, you can use Amazon SES Notifications (via SNS - Simple Notification Service) to receive events such as email delivery, bounces, complaints, and rejections. Here's how you can set this up step by step:
 
@@ -577,7 +601,7 @@ A `JWT` will be sent back as a `Bearer` token to your server/service ensure that
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
-### Adding task to queue
+## Adding task to queue
 
 To add a task to the queue is simply done by sending a `POST` request with the following variables
 
@@ -610,7 +634,7 @@ To add a task to the queue is simply done by sending a `POST` request with the f
 }
 ```
 
-### Remove task from queue
+## Remove task from queue
 
 To remove a task to the queue is simply done by sending a `POST` request with the following variables
 
@@ -648,9 +672,11 @@ To remove a task to the queue is simply done by sending a `POST` request with th
 }
 ```
 
-### Responses from task queue
+## Notifications from Task Queue
 
 When actions are triggered by the queue where a task has been added, manually removed or expired notification is sent to your server/service of the action this is sent to the corresponding `return_api` for the API Key that executed the task.
+
+A `JWT` will be sent back as a `Bearer` token to your server/service ensure that your server/service has the same secret `SALT` to verify the token signature.
 
 When a new task is added to the queue:
 

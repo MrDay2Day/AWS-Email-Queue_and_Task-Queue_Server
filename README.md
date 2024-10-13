@@ -484,6 +484,35 @@ or
 
 Emails are sent as `From-data` by using the generated API Key as `Bearer` Token in the `Authorization` Header. `ADMIN_API_KEY` cannot send emails.
 
+**Attachment MIME Type**
+
+To edit: `src/middleware/multer.ts`
+
+```json
+"image/gif",
+"image/jpeg",
+"image/png",
+"image/jpg",
+"text/csv",
+"text/html",
+"application/msword",
+"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+"application/vnd.ms-excel",
+"application/vnd.ms-excel.addin.macroEnabled.12",
+"application/vnd.ms-excel.sheet.macroEnabled.12",
+"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+"application/pdf",
+"application/vnd.ms-powerpoint",
+"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+"application/vnd.ms-access",
+"application/json",
+"text/csv",
+"application/vnd.ms-excel",
+"application/vnd.ms-excel.addin.macroEnabled.12",
+"application/vnd.ms-excel.sheet.macroEnabled.12",
+"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+```
+
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
 ### Adding to email queue

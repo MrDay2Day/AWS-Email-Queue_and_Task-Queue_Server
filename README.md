@@ -13,13 +13,13 @@ Both components work together to streamline task management and email delivery, 
 1. [Setup](#setup)
 1. [Environment Variables](#environment-variables)
 1. [Development](#deployment)
-   - [TypeScript](#typescript)
-   - [NodeJS](#nodejs)
-   - [Docker](#docker)
+   - [ts-node](#ts-node)
+   - [node](#typescript---javascript)
+   - [docker-compose](#docker)
 1. [Deployment](#deployment)
-   - [TypeScript](#typescript-1)
-   - [NodeJS](#nodejs-1)
-   - [Docker](#docker-1)
+   - [ts-node](#ts-node-1)
+   - [node](#typescript---javascript-1)
+   - [docker-compose](#docker-1)
 1. [API Keys](#api-keys)
    - [Create API Key](#create-api-key)
    - [Delete API Key](#delete-api-key)
@@ -81,7 +81,7 @@ cp .env.template .env
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
-## TypeScript
+## ts-node
 
 Using your local system using:
 
@@ -101,7 +101,7 @@ npm run ts-dev
 
 </div>
 
-## NodeJs
+## Typescript -> JavaScript
 
 Using your local system compiling `TypeScript` in watch mode to `Javascript` and then listen for changes with `nodemon`:
 
@@ -168,7 +168,7 @@ _NB: Docker deployment is recommended for deployment._
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
-## TypeScript
+## ts-node
 
 Using your local system using:
 
@@ -188,7 +188,7 @@ npm run ts
 
 </div>
 
-## NodeJs
+## Typescript -> JavaScript
 
 Using your local system compiling `TypeScript` in watch mode to `Javascript` and then listen for changes with `nodemon`:
 

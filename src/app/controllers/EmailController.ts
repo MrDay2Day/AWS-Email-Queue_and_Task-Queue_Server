@@ -17,6 +17,7 @@ import { EmailDataTypes } from "../models/database/types/General_Types";
 type EmailDataReturnType = AWSEmailType & {
   return_api: string;
   api_key: string;
+  attachments: number;
 };
 
 const aws_wait_period = process.env.AWS_SES_QUEUE_WAIT_TIME
@@ -45,6 +46,7 @@ async function main_function(data: EmailDataReturnType): Promise<void> {
         send_email: data.sendEmail,
         subject: data.subject,
         return_api: data.return_api,
+        attachments: data.attachments,
         api_key: data.api_key,
       });
 
@@ -191,6 +193,7 @@ class EmailController {
         data: parsed_data,
         template,
         emailAttachments,
+        attachments: emailAttachments.length,
         api_key,
       } as EmailDataReturnType;
 
@@ -245,6 +248,7 @@ class EmailController {
           open: !!result.open,
           created_at: result.created_at,
           updated_at: result.updated_at,
+          attachments: result.attachments,
           api_key: `xxxxx-xxxxxxxxxxxx_xxxxxxxx.${
             result.api_key.split(".")[1]
           }`,
@@ -271,7 +275,8 @@ class EmailController {
         throw { msg: "Not Authorized!", status: 401, code: "4000501" };
       }
 
-      const { email_ids } = req.body;
+      const { api_key, body } = req;
+      const { email_ids } = body;
 
       const ids_to_find: string[] = [];
 
@@ -300,7 +305,7 @@ class EmailController {
 
       for (let the_id in ids_to_find) {
         const email_record = new EmailClassSQL();
-        await email_record.fetchInfo({ id: ids_to_find[the_id] });
+        await email_record.fetchInfo({ id: ids_to_find[the_id], api_key });
         if (email_record.id) {
           result.push({
             email_id: email_record.returnData().id,
@@ -311,6 +316,7 @@ class EmailController {
             open: !!email_record.returnData().open,
             created_at: email_record.returnData().created_at,
             updated_at: email_record.returnData().updated_at,
+            attachments: email_record.returnData().attachments,
             api_key: `xxxxx-xxxxxxxxxxxx_xxxxxxxx.${
               email_record.returnData().api_key.split(".")[1]
             }`,

@@ -3,7 +3,7 @@
 import { v4 as uuidv4 } from "uuid";
 
 import { QueryResult } from "mysql2";
-import { connect_sql } from "../../../config/mysql/config";
+import { connect_sql, sql_pool } from "../../../config/mysql/config";
 import { EMAIL_STATUS, EmailDataTypes } from "../database/types/General_Types";
 
 type SelectEmailDataTypes = QueryResult & [EmailDataTypes];
@@ -17,6 +17,7 @@ export class EmailClassSQL implements EmailDataTypes {
   message_id: string;
   data: string;
   return_api: string;
+  attachments?: number;
   status: EMAIL_STATUS;
   open: Boolean;
   updated_at: Date;
@@ -30,6 +31,7 @@ export class EmailClassSQL implements EmailDataTypes {
     this.message_id = "";
     this.data = "";
     this.return_api = "";
+    this.attachments = 0;
     this.status = EMAIL_STATUS.PENDING;
     this.open = false;
     this.updated_at = new Date();
@@ -47,12 +49,13 @@ export class EmailClassSQL implements EmailDataTypes {
     subject: string;
     return_api: string;
     api_key: string;
+    attachments: number;
   }) {
     const sql = await connect_sql();
 
     try {
       const [info] = (await sql.query(
-        `insert into email(id, data, message_id, return_api, status, open, api_key, email, send_email, subject) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `insert into email(id, data, message_id, return_api, status, open, api_key, email, send_email, subject, attachments) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           record.id,
           record.data,
@@ -64,6 +67,7 @@ export class EmailClassSQL implements EmailDataTypes {
           record.email,
           record.send_email,
           record.subject,
+          record.attachments,
         ]
       )) as { insertId: number }[];
 
@@ -84,6 +88,7 @@ export class EmailClassSQL implements EmailDataTypes {
         this.message_id = record_data.message_id;
         this.data = record_data.data;
         this.return_api = record_data.return_api;
+        this.attachments = record_data.attachments;
         this.status = record_data.status;
         this.open = record_data.open;
         this.updated_at = record_data.updated_at;
@@ -123,6 +128,7 @@ export class EmailClassSQL implements EmailDataTypes {
         this.message_id = record_data.message_id;
         this.data = record_data.data;
         this.return_api = record_data.return_api;
+        this.attachments = record_data.attachments;
         this.status = record_data.status;
         this.open = record_data.open;
         this.updated_at = record_data.updated_at;
@@ -164,19 +170,44 @@ export class EmailClassSQL implements EmailDataTypes {
     }
   }
 
-  async fetchInfo(record: { message_id?: string; id?: string }) {
+  async fetchInfo(record: {
+    message_id?: string;
+    id?: string;
+    api_key?: string;
+  }) {
     const sql = await connect_sql();
+
+    console.log({ id: record.id, api_key: record.api_key });
 
     try {
       if (!record.id && !record.message_id) {
         throw { msg: "Missing field for search" };
       }
 
+      let column: string = "";
+      let value: string = "";
+
+      if (record.message_id) {
+        column = "message_id";
+        value = record.message_id || "";
+      } else if (record.id) {
+        column = "id";
+        value = record.id || "";
+      }
+
+      if (!column || !value) {
+        throw new Error("No valid identifier provided (message_id or id).");
+      }
+
+      const sql_values = [value];
+      if (record.api_key) {
+        sql_values.push(record.api_key);
+      }
       const [fetched] = (await sql.query(
-        `select * from email where ${
-          record.message_id ? "message_id" : record.id ? "id" : "-"
-        } = ?`,
-        [record.message_id ? record.message_id : record.id ? record.id : ""]
+        `SELECT * FROM email WHERE ${column} = ? ${
+          record.api_key ? "AND api_key = ?" : ""
+        };`,
+        sql_values
       )) as SelectEmailDataTypes[];
 
       const record_data: EmailDataTypes | null | undefined = fetched[0];
@@ -190,6 +221,7 @@ export class EmailClassSQL implements EmailDataTypes {
         this.message_id = record_data.message_id;
         this.data = record_data.data;
         this.return_api = record_data.return_api;
+        this.attachments = record_data.attachments;
         this.status = record_data.status;
         this.open = record_data.open;
         this.updated_at = record_data.updated_at;
@@ -238,6 +270,7 @@ export class EmailClassSQL implements EmailDataTypes {
       message_id: this.message_id,
       data: this.data,
       return_api: this.return_api,
+      attachments: this.attachments,
       open: this.open,
       updated_at: this.updated_at,
       created_at: this.created_at,

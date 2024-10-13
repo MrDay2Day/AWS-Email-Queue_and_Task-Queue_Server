@@ -15,6 +15,7 @@ export type EmailDataTypes = {
   readonly message_id: string;
   readonly data: string;
   readonly return_api: string;
+  readonly attachments?: number;
   status: EMAIL_STATUS;
   open: Boolean;
   readonly updated_at: Date;

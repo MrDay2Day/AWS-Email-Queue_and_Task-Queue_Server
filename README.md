@@ -27,6 +27,7 @@ Both components work together to streamline task management and email delivery, 
    - [Send an Email](#send-an-email)
      - [Adding to Email Queue](#adding-to-email-queue)
      - [Responses from Email Queue](#responses-from-email-queue)
+   - [Email Records](#email-records)
    - [Email Status Notification Breakdown](#email-notification-status-breakdown)
    - [Tracking Emails](#tracking-emails)
 1. [Task Queue](#api-keys)
@@ -356,7 +357,7 @@ If the request is successful `valid` will be `true` else `false` with a error me
 
 # Email Queue
 
-The Email Queue uses AWS-SES to send raw emails - that is HTML and Buffer for attachments.
+The Email Queue uses AWS-SES to send raw emails _(Email HTML file)_ with attachments _(File Buffer)_.
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
@@ -517,6 +518,103 @@ Emails are sent as `From-data` by using the generated API Key as `Bearer` Token 
 If the email is sent or failed your server/service will be notified at the "return_api" that was set when creating your API Key.
 
 A `JWT` will be sent back as a `Bearer` token to your server/service ensure that your server/service has the same secret `SALT` to verify the token signature.
+
+## Email Records
+
+You can retrieve email queue records to check the status of previously sent emails. Access to these records is restricted to the API_KEY used when making the original request.
+
+There are two methods for fetching these records:
+
+- You can either retrieve a specific set of records (max 20 per request) using the queue_id provided when the request was made.
+- You can fetch previously sent emails ordered by the most recent date, with a maximum of 50 records per request, in a paginated format.
+
+<div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
+
+### **Retrieving Email Record**
+
+**Method 1**
+
+Retrieving a specific set of records (max 20 per request) using the queue_id by send a `POST` request.
+
+`{{SERVER}}/server/email/fetch-specific-records`
+
+| Key       | Type      | Value                                  |
+| --------- | --------- | -------------------------------------- |
+| email_ids | string[ ] | `queue_id` from emails added to queue. |
+
+**Request**
+
+```json
+{
+  "email_ids": ["StIiOwJiK0AaYybV97Hp-3R95ig-N62MgYcZCw8O"]
+}
+```
+
+**Response**
+
+```json
+{
+  "valid": true,
+  "result": [
+    {
+      "email_id": "IL2yFJifMdIj3h0FWUGh-Mr5v14-NjwRuHaUL1MC",
+      "email": "name@email.com",
+      "send_email": "email@company.com",
+      "subject": "Draft Email",
+      "data": "{\"NAME\":\"John Brown\",\"ACCOUNT\":238570023,\"BALANCE\":\"$345,600,00\",\"DATE\":\"Monday, November 4th, 2024\",\"SUPPORT_EMAIL\":\"support@company.com\"}",
+      "open": false,
+      "created_at": "2024-10-13T15:41:06.000Z",
+      "updated_at": "2024-10-13T15:41:08.000Z",
+      "attachments": 1,
+      "api_key": "xxxxx-xxxxxxxxxxxx_xxxxxxxx.1wiTebojwpv2w8WcYAzD"
+    }
+  ]
+}
+```
+
+**Method 2**
+
+Retrieving previously sent emails ordered by the most recent date, with a maximum of 50 records per request, in a paginated format.
+
+`{{SERVER}}/server/email/fetch-api-records`
+
+| Key    | Type   | Value                                       |
+| ------ | ------ | ------------------------------------------- |
+| page   | number | Page number                                 |
+| amount | number | Number of results to retrieve min 1 max 50. |
+
+**Request**
+
+```json
+{
+  "page": 1,
+  "amount": 20
+}
+```
+
+**Response**
+
+```json
+{
+  "valid": true,
+  "result": [
+    {
+      "email_id": "IL2yFJifMdIj3h0FWUGh-Mr5v14-NjwRuHaUL1MC",
+      "email": "name@email.com",
+      "send_email": "email@company.com",
+      "subject": "Draft Email",
+      "data": "{\"NAME\":\"John Brown\",\"ACCOUNT\":238570023,\"BALANCE\":\"$345,600,00\",\"DATE\":\"Monday, November 4th, 2024\",\"SUPPORT_EMAIL\":\"support@company.com\"}",
+      "open": false,
+      "created_at": "2024-10-13T15:41:06.000Z",
+      "updated_at": "2024-10-13T15:41:08.000Z",
+      "attachments": 1,
+      "api_key": "xxxxx-xxxxxxxxxxxx_xxxxxxxx.1wiTebojwpv2w8WcYAzD"
+    }
+  ]
+}
+```
+
+</div>
 
 ## Email Notification Status Breakdown
 

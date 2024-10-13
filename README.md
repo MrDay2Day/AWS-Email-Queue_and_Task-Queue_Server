@@ -507,7 +507,7 @@ To edit: `src/middleware/multer.ts`
 | .pptx     | MS PowerPoint      | application/vnd.openxmlformats-officedocument.presentationml.presentation |
 | .mdb      | MS Access Database | application/vnd.ms-access                                                 |
 | .json     | JSON               | application/json                                                          |
-| .xml      | JSON               | application/xml                                                           |
+| .xml      | XML                | application/xml                                                           |
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 

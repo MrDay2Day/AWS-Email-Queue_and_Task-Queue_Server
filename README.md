@@ -484,7 +484,7 @@ or
 
 Emails are sent as `From-data` by using the generated API Key as `Bearer` Token in the `Authorization` Header. `ADMIN_API_KEY` cannot send emails.
 
-**Attachment MIME Type**
+**Attachment Allowed MIME Types**
 
 To edit: `src/middleware/multer.ts`
 

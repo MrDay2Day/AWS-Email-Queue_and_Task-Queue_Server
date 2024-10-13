@@ -31,11 +31,7 @@ function commonFiles(req: Request, file: UploadedFileType, callback: any) {
       "application/vnd.openxmlformats-officedocument.presentationml.presentation",
       "application/vnd.ms-access",
       "application/json",
-      "text/csv",
-      "application/vnd.ms-excel",
-      "application/vnd.ms-excel.addin.macroEnabled.12",
-      "application/vnd.ms-excel.sheet.macroEnabled.12",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/xml ",
     ];
     if (fileFormat.includes(file.mimetype)) {
       callback(null, true);

@@ -488,30 +488,26 @@ Emails are sent as `From-data` by using the generated API Key as `Bearer` Token 
 
 To edit: `src/middleware/multer.ts`
 
-```json
-"image/gif",
-"image/jpeg",
-"image/png",
-"image/jpg",
-"text/csv",
-"text/html",
-"application/msword",
-"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-"application/vnd.ms-excel",
-"application/vnd.ms-excel.addin.macroEnabled.12",
-"application/vnd.ms-excel.sheet.macroEnabled.12",
-"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-"application/pdf",
-"application/vnd.ms-powerpoint",
-"application/vnd.openxmlformats-officedocument.presentationml.presentation",
-"application/vnd.ms-access",
-"application/json",
-"text/csv",
-"application/vnd.ms-excel",
-"application/vnd.ms-excel.addin.macroEnabled.12",
-"application/vnd.ms-excel.sheet.macroEnabled.12",
-"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-```
+| Extension | File Type          | mimetype                                                                  |
+| --------- | ------------------ | ------------------------------------------------------------------------- |
+| .gif      | Image              | image/gif                                                                 |
+| .jpeg     | Image              | image/jpeg                                                                |
+| .png      | Image              | image/png                                                                 |
+| .jpg      | Image              | image/jpg                                                                 |
+| .csv      | CSV                | text/csv                                                                  |
+| .html     | Text               | text/html                                                                 |
+| .doc      | MS Word            | application/msword                                                        |
+| .docx     | MS Word            | application/vnd.openxmlformats-officedocument.wordprocessingml.document   |
+| .xls      | MS Excel           | application/vnd.ms-excel                                                  |
+| .xlam     | MS Excel           | application/vnd.ms-excel.addin.macroEnabled.12                            |
+| .xlsm     | MS Excel           | application/vnd.ms-excel.sheet.macroEnabled.12                            |
+| .xlsx     | MS Excel           | application/vnd.openxmlformats-officedocument.spreadsheetml.sheet         |
+| .pdf      | PDF                | application/pdf                                                           |
+| .ppt      | MS PowerPoint      | application/vnd.ms-powerpoint                                             |
+| .pptx     | MS PowerPoint      | application/vnd.openxmlformats-officedocument.presentationml.presentation |
+| .mdb      | MS Access Database | application/vnd.ms-access                                                 |
+| .json     | JSON               | application/json                                                          |
+| .xml      | JSON               | application/xml                                                           |
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 

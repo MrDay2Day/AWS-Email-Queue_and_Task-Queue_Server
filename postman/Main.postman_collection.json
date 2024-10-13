@@ -1,0 +1,476 @@
+{
+	"info": {
+		"_postman_id": "2495dc38-537d-4813-869b-acc1a8718df6",
+		"name": "Main",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "29578534"
+	},
+	"item": [
+		{
+			"name": "API Management",
+			"item": [
+				{
+					"name": "Create API Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let api_key = pm.response.json().api_key\r",
+									"let api_name = pm.response.json().api_name\r",
+									"\r",
+									"if(api_key && api_name){\r",
+									"    pm.globals.set(\"USER_API\", api_key);\r",
+									"    pm.globals.set(\"USER_API_KEY_NAME\", api_name);\r",
+									"\r",
+									"\r",
+									"    if (pm.globals.get(\"USER_API\") === api_key){\r",
+									"        console.log(\"API Key Assigned\")\r",
+									"    }\r",
+									"    if (pm.globals.get(\"USER_API_KEY_NAME\") === api_name){\r",
+									"        console.log(\"API Key Name Assigned\")\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{ADMIN_API_KEY}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"api_name\": \"bidsquawk\", // name of API Key\r\n    \"return_api\": \"http://192.168.0.120:4042/bidsquawk\", // API return route for this API key\r\n    \"temporary\": false, // false will disable duration of api_key\r\n    \"duration\": \"4d\" // max 10 years (Only required if 'temporary' is true) \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{SERVER}}/server/api/create"
+					},
+					"response": []
+				},
+				{
+					"name": "PING",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{ADMIN_API_KEY}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{SERVER}}/server/ping"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete API Key",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{ADMIN_API_KEY}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"api_name\": \"{{USER_API_KEY_NAME}}\", // Name of API Key to delete\r\n    // \"api_name\": \"bidsquawk\", // Name of API Key to delete\r\n    \"api_key\": \"\" // API Key to Delete\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{SERVER}}/server/api/delete"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Email Queue",
+			"item": [
+				{
+					"name": "Email Templates",
+					"item": [
+						{
+							"name": "Add Template",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{ADMIN_API_KEY}}"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "html",
+											"type": "file",
+											"src": "postman-cloud:///1ef83240-5ea5-47c0-af9b-d344a8835d4a"
+										}
+									]
+								},
+								"url": "{{SERVER}}/server/email/add-template"
+							},
+							"response": []
+						},
+						{
+							"name": "List Templates",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{ADMIN_API_KEY}}"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"page\": 1,\r\n    \"limit\": 20\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{SERVER}}/server/email/list-templates"
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Template",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{ADMIN_API_KEY}}"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fileName\": \"JMDA Test.html\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{SERVER}}/server/email/remove-template"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Add to Email Queue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{USER_API}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "shortName",
+									"value": "Day2Day Email Server",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "kurupt90s@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "replyEmail",
+									"value": "test@day2dayja.com",
+									"type": "text"
+								},
+								{
+									"key": "sendEmail",
+									"value": "email@day2dayja.com",
+									"type": "text"
+								},
+								{
+									"key": "subject",
+									"value": "Draft Email",
+									"type": "text"
+								},
+								{
+									"key": "data",
+									"value": "{\"NAME\":\"John Brown\",\"ACCOUNT\":238570023, \"BALANCE\": \"$345,600,00\", \"DATE\": \"Monday, November 4th, 2024\", \"SUPPORT_EMAIL\":\"support@company.com\"}",
+									"type": "text"
+								},
+								{
+									"key": "text",
+									"value": "Dear {{-NAME-}},\n<br/ >\nYou account balance is ready for {{-BALANCE-}} a/c {{-ACCOUNT-}}. You balance is due {{-DATE-}}. If you have any issues making your payment please email us at {{-SUPPORT_EMAIL-}}.\n\n \n\nThank you\n\nManagment.",
+									"type": "text"
+								},
+								{
+									"key": "template",
+									"value": "draft-email",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "postman-cloud:///1ef8112c-8dda-4ca0-836f-a25d5f7437f7"
+								}
+							]
+						},
+						"url": "{{SERVER}}/server/email/add"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Specific Records",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{USER_API}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email_ids\": [\r\n        \"UM2tLxw4xAfFCfmPpzwj-tk57VH-IezEUtmt2n4f\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{SERVER}}/server/email/fetch-specific-records"
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Records for APIs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{USER_API}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"page\": 1,\r\n    \"amount\": 20 \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{SERVER}}/server/email/fetch-api-records"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Task Queue",
+			"item": [
+				{
+					"name": "Add to Task Queue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let taskId = pm.response.json().taskId\r",
+									"\r",
+									"if(taskId){\r",
+									"    pm.globals.set(\"TASK_ID\", taskId);\r",
+									"\r",
+									"    if (pm.globals.get(\"TASK_ID\") === taskId){\r",
+									"        console.log(\"Task ID Assigned\")\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{USER_API}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"data\": {\r\n        \"hello\": \"world\",\r\n        \"foo\": \"bar\",\r\n        \"value\": 1234567890\r\n    },\r\n    \"expiryDate\": \"2024-10-09T04:30:23.369Z\" // 7:11pm 9/30/2024\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{SERVER}}/server/queue/add"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Task from Queue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{USER_API}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"queue_id\": \"{{TASK_ID}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{SERVER}}/server/queue/remove"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

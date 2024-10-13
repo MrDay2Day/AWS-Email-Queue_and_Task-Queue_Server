@@ -527,7 +527,7 @@ To edit: `src/middleware/multer.ts`
 | data       | string (JSON) | Yes      | Template data for email.                                         |
 | text       | string        | Yes      | Template string that is sent in-place of the template.           |
 | template   | string        | Yes      | Name of template eg: If template is "test.html" then type "test" |
-| files      | file/buffer   | No       | file/buffer[] of files for attachment.                           |
+| files      | file/buffer   | No       | file/buffer[ ] of files for attachment.                          |
 
 **Response**
 

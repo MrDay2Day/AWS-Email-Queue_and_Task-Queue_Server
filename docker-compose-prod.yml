@@ -1,21 +1,5 @@
 name: ${APP_CONTAINER_NAME}-container-prod
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: server-mysql
-    restart: unless-stopped
-    networks:
-      - main_network
-    environment:
-      MYSQL_ROOT_PASSWORD: root_password # Root password
-      MYSQL_DATABASE: main_data # Default database
-      MYSQL_USER: main_user # Non-root user
-      MYSQL_PASSWORD: user_password # Non-root user password
-    volumes:
-      - mysql_data:/var/lib/mysql # Mounting persistent volume for data storage
-    ports:
-      - "3959:3306" # Expose port 3306 for MySQL
-
   node-server:
     environment:
       - NODE_ENV=prod
@@ -34,10 +18,26 @@ services:
       - ${PORT}
     ports:
       - "${PORT}:${PORT}"
-    command: /bin/sh -c "sleep 20 && npx ts-node ./src/server.ts"
+    command: npx ts-node ./src/server.ts
     restart: unless-stopped
     networks:
       - main_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: server-mysql
+    restart: unless-stopped
+    networks:
+      - main_network
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: main_data
+      MYSQL_USER: main_user
+      MYSQL_PASSWORD: user_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3959:3306"
 
 networks:
   main_network:
@@ -45,4 +45,4 @@ networks:
 
 volumes:
   mysql_data:
-    driver: local # Use local storage for persistent data
+    driver: local

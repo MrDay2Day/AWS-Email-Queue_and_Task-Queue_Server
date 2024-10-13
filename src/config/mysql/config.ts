@@ -75,9 +75,9 @@ export function ConnectMySQL(): Promise<{
       console.log(text_bright_magenta("\tMYSQL DATABASE CONNECTED!\n"));
       resolve({ valid: true, data });
     } catch (error) {
-      console.log("MySQL Connection Retry in 10s");
-      setTimeout(() => ConnectMySQL(), 10000);
-      // resolve({ valid: false, error });
+      // console.log("MySQL Connection Retry in 10s");
+      // setTimeout(() => ConnectMySQL(), 10000);
+      reject({ valid: false, error });
     }
   });
 }

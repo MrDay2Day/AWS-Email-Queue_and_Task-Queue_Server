@@ -31,14 +31,14 @@ services:
     networks:
       - main_network
     environment:
-      MYSQL_ROOT_PASSWORD: root_password # Root password
-      MYSQL_DATABASE: main_data # Default database
-      MYSQL_USER: main_user # Non-root user
-      MYSQL_PASSWORD: user_password # Non-root user password
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: main_datae
+      MYSQL_USER: main_user
+      MYSQL_PASSWORD: user_password
     volumes:
-      - mysql_data:/var/lib/mysql # Mounting persistent volume for data storage
+      - mysql_data:/var/lib/mysql
     ports:
-      - "3959:3306" # Expose port 3306 for MySQL
+      - "3959:3306"
 
 networks:
   main_network:
@@ -46,4 +46,4 @@ networks:
 
 volumes:
   mysql_data:
-    driver: local # Use local storage for persistent data
+    driver: local

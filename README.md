@@ -68,7 +68,7 @@ cp .env.template .env
 | AWS_ACCESS_KEY_ID          | -                          | AWS SMTP Settings.                              |
 | AWS_SECRET_ACCESS_KEY      | -                          | AWS SMTP Settings.                              |
 | AWS_SES_SEND_LIMIT_PER_SEC | 10                         | 10 emails pre second.                           |
-| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch.             |
+| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch in ms.             |
 | AWS_CONFIG_SET_NAME        | email-status               | The default configuration set name for SES.     |
 | MYSQL_HOST                 | server-mysql               | Default for docker.                             |
 | MYSQL_USER                 | root                       | Default for docker.                             |

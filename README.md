@@ -1,5 +1,8 @@
 <div style="max-width: 600px; margin-right: auto; margin-left: auto;">
 
+![GitHub License](https://img.shields.io/github/license/MrDay2Day/AWS-Email-Queue_and_Task-Queue_Server) ![GitHub contributors](https://img.shields.io/github/contributors/MrDay2Day/AWS-Email-Queue_and_Task-Queue_Server)
+![GitHub last commit](https://img.shields.io/github/last-commit/MrDay2Day/AWS-Email-Queue_and_Task-Queue_Server)
+
 # Task Queue & AWS Email Queue Server
 
 Task Queue with Expiration and Notification API. This microservice allows you to queue tasks with an expiration date and time. It monitors these tasks and triggers a callback to your designated API once a task has expired, ensuring that your services are notified in real-time when deadlines are missed or tasks require follow-up. The expiration logic is fully customizable to meet your workflow needs, allowing seamless integration with your existing systems.

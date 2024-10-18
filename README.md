@@ -40,7 +40,7 @@ Both components work together to streamline task management and email delivery, 
 
 # Setup
 
-You can start the server via `TypeScript` using `ts-node`, `ts-node-dev`, `node` compiled from `TypeScript` with or wihtout `Docker` (which is recommened for the quickest deployment).
+You can start the server via using `ts-node`, `ts-node-dev`, `node` - `Javascript` compiled from `TypeScript` with or wihtout `Docker` (which is recommened for the quickest deployment).
 
 **IMPORTANT ACTION**
 

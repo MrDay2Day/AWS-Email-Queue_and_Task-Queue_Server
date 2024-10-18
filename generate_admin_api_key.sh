@@ -41,7 +41,7 @@ VALUE_1=$(generate_string 5)
 VALUE_2=$(generate_string 12)  
 VALUE_3=$(generate_string 8)  
 VALUE_4=$(generate_string 20)  
-SALT=$(generate_string 120)  
+SALT=$(generate_string 150)  
 
 API_KEY="${VALUE_1}-${VALUE_2}_${VALUE_3}.${VALUE_4}"
 

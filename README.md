@@ -16,7 +16,7 @@ Both components work together to streamline task management and email delivery, 
 1. [Setup](#setup)
 1. [Environment Variables](#environment-variables)
 1. [Development](#deployment)
-   - [ts-node](#ts-node)
+   - [ts-node-dev](#ts-node-dev)
    - [node](#typescript---javascript)
    - [docker-compose](#docker)
 1. [Deployment](#deployment)
@@ -50,6 +50,12 @@ You can start the server via using `ts-node`, `ts-node-dev`, `node` - `Javascrip
 cp .env.template .env
 ```
 
+then by executing `generate_admin_api_key.sh` this will generate a new `ADMIN_API_KEY` and also 150 character `SALT` for your `JWT`.
+
+```bash
+./generate_admin_api_key.sh
+```
+
 # Environment Variables
 
 | Variable                   | Default Value              | Description                                     |
@@ -68,7 +74,7 @@ cp .env.template .env
 | AWS_ACCESS_KEY_ID          | -                          | AWS SMTP Settings.                              |
 | AWS_SECRET_ACCESS_KEY      | -                          | AWS SMTP Settings.                              |
 | AWS_SES_SEND_LIMIT_PER_SEC | 10                         | 10 emails pre second.                           |
-| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch in ms.             |
+| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch in ms.       |
 | AWS_CONFIG_SET_NAME        | email-status               | The default configuration set name for SES.     |
 | MYSQL_HOST                 | server-mysql               | Default for docker.                             |
 | MYSQL_USER                 | root                       | Default for docker.                             |
@@ -84,7 +90,7 @@ cp .env.template .env
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
-## ts-node
+## ts-node-dev
 
 Using your local system using:
 
@@ -193,7 +199,7 @@ npm run ts
 
 ## Typescript -> JavaScript
 
-Using your local system compiling `TypeScript` in watch mode to `Javascript` and then listen for changes with `nodemon`:
+Using `node` to execute compiled `Javascript` from `Typescript`
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
@@ -229,7 +235,7 @@ npn run start
 
 <div style="padding-left: 30px; margin-right: auto; margin-left: auto;">
 
-This containers uses `ts-node`
+This container uses `ts-node` to run production.
 
 ```bash
 ./app.sh docker-prod

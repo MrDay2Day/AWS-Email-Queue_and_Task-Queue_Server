@@ -3,6 +3,7 @@ import axios from "axios";
 import { EmailClassSQL } from "../models/global/email_mysql";
 import { EMAIL_STATUS } from "../models/database/types/General_Types";
 import ReturnAPIController from "./ReturnAPIController";
+import { catchErrorPromise } from "../utils/catchError";
 
 export default class TrackerController {
   static async openEmails(
@@ -11,38 +12,37 @@ export default class TrackerController {
     nex: NextFunction
   ): Promise<any> {
     try {
-      res.writeHead(200, {
-        "Content-Type": "image/gif",
-        "Content-Length": "43",
-      });
-      res.end(Buffer.from("R0lGODlhAQABAAAAACwAAAAAAQABAAA=", "base64"));
+      res
+        .writeHead(200, {
+          "Content-Type": "image/gif",
+          "Content-Length": "43",
+        })
+        .end(Buffer.from("R0lGODlhAQABAAAAACwAAAAAAQABAAA=", "base64"));
 
       const emailId = req.query.id as string;
       const email_record = new EmailClassSQL();
       await email_record.fetchInfo({ id: emailId });
       if (!email_record.open) {
-        // console.log({ emailId, before: email_record.returnData() });
+        await catchErrorPromise(email_record.emailOpen());
 
-        await email_record.emailOpen();
-
-        // console.log({ emailId, after: email_record.returnData() });
-
-        await ReturnAPIController.post_return(
-          email_record.returnData().api_key,
-          email_record.returnData().return_api,
-          {
-            status: "OPEN",
-            email_id: email_record.id,
-            data: {
-              email_data: {
-                email: email_record.email,
-                send_email: email_record.send_email,
-                subject: email_record.subject,
-                data: email_record.data,
-                open: !!email_record.open,
+        await catchErrorPromise(
+          ReturnAPIController.post_return(
+            email_record.returnData().api_key,
+            email_record.returnData().return_api,
+            {
+              status: "OPEN",
+              email_id: email_record.id,
+              data: {
+                email_data: {
+                  email: email_record.email,
+                  send_email: email_record.send_email,
+                  subject: email_record.subject,
+                  data: email_record.data,
+                  open: !!email_record.open,
+                },
               },
-            },
-          }
+            }
+          )
         );
       }
 

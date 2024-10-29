@@ -153,11 +153,11 @@ class EmailEngine {
         }
 
         if (process.env.APP_URL) {
-          const trackerString = "{{-TRACKER-}}";
+          const trackerString = "<table";
 
-          const trackerTag = `<img src="${process.env.APP_URL}/identifier?id=${id}" width="1" height="1" style="display:none;" />`;
-          const dynamicRegexTracker = new RegExp(trackerString, "g");
-          htmlString = htmlString.replace(dynamicRegexTracker, trackerTag);
+          const trackerTag = `<img src="${process.env.APP_URL}/identifier?id=${id}" width="1" height="1" style="display:none;" /> <table`;
+          // const dynamicRegexTracker = new RegExp(trackerString, "g");
+          htmlString = htmlString.replace(trackerString, trackerTag);
         }
 
         const searchString = "<a";

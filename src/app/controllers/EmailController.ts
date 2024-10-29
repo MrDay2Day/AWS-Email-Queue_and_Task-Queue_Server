@@ -13,6 +13,7 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import { EmailClassSQL } from "../models/global/email_mysql";
 import { EmailDataTypes } from "../models/database/types/General_Types";
+import { catchErrorPromise } from "../utils/catchError";
 
 type EmailDataReturnType = AWSEmailType & {
   return_api: string;
@@ -67,20 +68,22 @@ async function main_function(data: EmailDataReturnType): Promise<void> {
       });
     }
   } catch (error) {
-    await ReturnAPIController.post_return(data.api_key, data.return_api, {
-      status: "ERROR",
-      email_id: data.id,
-      data: {
-        email_data: {
-          email: data.email,
-          send_email: data.sendEmail,
-          subject: data.subject,
-          data: data.data,
-          open: false,
+    await catchErrorPromise(
+      ReturnAPIController.post_return(data.api_key, data.return_api, {
+        status: "ERROR",
+        email_id: data.id,
+        data: {
+          email_data: {
+            email: data.email,
+            send_email: data.sendEmail,
+            subject: data.subject,
+            data: data.data,
+            open: false,
+          },
+          error,
         },
-        error,
-      },
-    });
+      })
+    );
   }
 }
 const emailQueue = new LineQueue<EmailDataReturnType, void>(

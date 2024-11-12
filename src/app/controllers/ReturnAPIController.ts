@@ -23,9 +23,9 @@ export default class ReturnAPIController {
 
       const resData = await raw.json();
 
-      return resData;
+      return { valid: true, resData };
     } catch (error) {
-      throw error;
+      return { valid: false, error };
     }
   }
 }

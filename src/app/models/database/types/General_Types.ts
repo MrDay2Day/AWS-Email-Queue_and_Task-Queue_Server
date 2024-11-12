@@ -4,6 +4,8 @@ export enum EMAIL_STATUS {
   DELIVERED = "DELIVERED",
   BOUNCE = "BOUNCE",
   COMPLAINT = "COMPLAINT",
+  QUEUE = "QUEUE",
+  FAIL = "FAIL",
 }
 
 export type EmailDataTypes = {
@@ -12,7 +14,7 @@ export type EmailDataTypes = {
   readonly email: string;
   readonly send_email: string;
   readonly subject: string;
-  readonly message_id: string;
+  readonly message_id: string | null;
   readonly data: string;
   readonly return_api: string;
   readonly attachments?: number;

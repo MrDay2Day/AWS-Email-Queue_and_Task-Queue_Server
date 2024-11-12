@@ -5,8 +5,15 @@ import { v4 as uuidv4 } from "uuid";
 import { QueryResult } from "mysql2";
 import { connect_sql } from "../../../config/mysql/config";
 import { APIKeyTypes } from "../database/types/General_Types";
+import { Connection } from "mysql2/promise";
 
 type SelectEmailDataTypes = QueryResult & [APIKeyTypes];
+
+let sql: Connection | null;
+
+(async function () {
+  sql = await connect_sql();
+})();
 
 export class APIClassSQLClass implements APIKeyTypes {
   id: string;
@@ -16,6 +23,7 @@ export class APIClassSQLClass implements APIKeyTypes {
   temporary: Boolean;
   expire_date: Date;
   created_at: Date;
+
   constructor() {
     this.id = "";
     this.api_key = "";
@@ -33,9 +41,8 @@ export class APIClassSQLClass implements APIKeyTypes {
     temporary: Boolean;
     expire_date: Date;
   }) {
-    const sql = await connect_sql();
     try {
-      const [info] = (await sql.query(
+      const [info] = (await sql?.query(
         `insert into api_key(api_key, api_name, return_api, temporary, expire_date) values(?, ?, ?, ?, ?)`,
         [
           record.api_key,
@@ -48,9 +55,10 @@ export class APIClassSQLClass implements APIKeyTypes {
 
       const insertedId = info.insertId;
 
-      const [fetched] = (await sql.query(`select * from api_key where id = ?`, [
-        insertedId,
-      ])) as SelectEmailDataTypes[];
+      const [fetched] = (await sql?.query(
+        `select * from api_key where id = ?`,
+        [insertedId]
+      )) as SelectEmailDataTypes[];
 
       const record_data: APIKeyTypes | null | undefined = fetched[0];
 
@@ -65,8 +73,6 @@ export class APIClassSQLClass implements APIKeyTypes {
       }
     } catch (err) {
       throw err;
-    } finally {
-      sql.end();
     }
   }
 
@@ -75,7 +81,6 @@ export class APIClassSQLClass implements APIKeyTypes {
     api_key_to_delete?: string;
     api_name?: string;
   }) {
-    const sql = await connect_sql();
     try {
       if ((!param.api_key_to_delete && !param.api_name) || !param.user_key) {
         throw {
@@ -84,13 +89,13 @@ export class APIClassSQLClass implements APIKeyTypes {
         };
       }
       if (param.api_key_to_delete) {
-        await sql.query(`DELETE FROM api_key WHERE api_key = ?`, [
+        await sql?.query(`DELETE FROM api_key WHERE api_key = ?`, [
           param.api_key_to_delete,
         ]);
         return true;
       }
       if (param.api_name) {
-        await sql.query(`DELETE FROM api_key WHERE api_name = ?`, [
+        await sql?.query(`DELETE FROM api_key WHERE api_name = ?`, [
           param.api_name,
         ]);
         return true;
@@ -102,8 +107,6 @@ export class APIClassSQLClass implements APIKeyTypes {
       };
     } catch (error) {
       throw error;
-    } finally {
-      sql.end();
     }
   }
 

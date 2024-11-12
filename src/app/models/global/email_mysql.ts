@@ -5,8 +5,15 @@ import { v4 as uuidv4 } from "uuid";
 import { QueryResult } from "mysql2";
 import { connect_sql, sql_pool } from "../../../config/mysql/config";
 import { EMAIL_STATUS, EmailDataTypes } from "../database/types/General_Types";
+import { Connection } from "mysql2/promise";
 
 type SelectEmailDataTypes = QueryResult & [EmailDataTypes];
+
+let sql: Connection | null;
+
+(async function () {
+  sql = await connect_sql();
+})();
 
 export class EmailClassSQL implements EmailDataTypes {
   id: string;
@@ -14,7 +21,7 @@ export class EmailClassSQL implements EmailDataTypes {
   email: string;
   send_email: string;
   subject: string;
-  message_id: string;
+  message_id: string | null;
   data: string;
   return_api: string;
   attachments?: number;
@@ -43,7 +50,7 @@ export class EmailClassSQL implements EmailDataTypes {
   async newRecord(record: {
     id: string;
     data: string;
-    message_id: string;
+    message_id: string | null;
     email: string;
     send_email: string;
     subject: string;
@@ -51,10 +58,8 @@ export class EmailClassSQL implements EmailDataTypes {
     api_key: string;
     attachments: number;
   }) {
-    const sql = await connect_sql();
-
     try {
-      const [info] = (await sql.query(
+      const [info] = (await sql?.query(
         `insert into email(id, data, message_id, return_api, status, open, api_key, email, send_email, subject, attachments) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           record.id,
@@ -73,7 +78,7 @@ export class EmailClassSQL implements EmailDataTypes {
 
       const insertedId = info.insertId;
 
-      const [fetched] = (await sql.query(`select * from email where id = ?`, [
+      const [fetched] = (await sql?.query(`select * from email where id = ?`, [
         insertedId,
       ])) as SelectEmailDataTypes[];
 
@@ -98,21 +103,17 @@ export class EmailClassSQL implements EmailDataTypes {
       return true;
     } catch (err) {
       throw err;
-    } finally {
-      sql.end();
     }
   }
 
   async updateRecord(record: { message_id: string; status: string }) {
-    const sql = await connect_sql();
-
     try {
-      await sql.query(`update email set status = ? where message_id = ?; `, [
+      await sql?.query(`update email set status = ? where message_id = ?; `, [
         record.status,
         record.message_id,
       ]);
 
-      const [fetched] = (await sql.query(
+      const [fetched] = (await sql?.query(
         `select * from email where message_id = ?`,
         [record.message_id]
       )) as SelectEmailDataTypes[];
@@ -138,20 +139,17 @@ export class EmailClassSQL implements EmailDataTypes {
       return true;
     } catch (err) {
       throw err;
-    } finally {
-      sql.end();
     }
   }
 
   async emailOpen() {
-    const sql = await connect_sql();
     try {
-      await sql.query(`update email set open = ? where message_id = ?;`, [
+      await sql?.query(`update email set open = ? where message_id = ?;`, [
         true,
         this.message_id,
       ]);
 
-      const [fetched] = (await sql.query(
+      const [fetched] = (await sql?.query(
         `select * from email where message_id = ?`,
         [this.message_id]
       )) as SelectEmailDataTypes[];
@@ -165,8 +163,6 @@ export class EmailClassSQL implements EmailDataTypes {
       return true;
     } catch (err) {
       throw err;
-    } finally {
-      sql.end();
     }
   }
 
@@ -175,10 +171,6 @@ export class EmailClassSQL implements EmailDataTypes {
     id?: string;
     api_key?: string;
   }) {
-    const sql = await connect_sql();
-
-    console.log({ id: record.id, api_key: record.api_key });
-
     try {
       if (!record.id && !record.message_id) {
         throw { msg: "Missing field for search" };
@@ -203,7 +195,7 @@ export class EmailClassSQL implements EmailDataTypes {
       if (record.api_key) {
         sql_values.push(record.api_key);
       }
-      const [fetched] = (await sql.query(
+      const [fetched] = (await sql?.query(
         `SELECT * FROM email WHERE ${column} = ? ${
           record.api_key ? "AND api_key = ?" : ""
         };`,
@@ -231,20 +223,16 @@ export class EmailClassSQL implements EmailDataTypes {
       return true;
     } catch (err) {
       throw err;
-    } finally {
-      sql.end();
     }
   }
 
   async fetchInfoByApiKey(api_key: string, limit: number, offset: number) {
-    const sql = await connect_sql();
-
     try {
       if (!api_key || !limit || !offset) {
         throw { msg: "Missing fields." };
       }
 
-      const [fetched] = (await sql.query(
+      const [fetched] = (await sql?.query(
         `SELECT * FROM email WHERE api_key = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
         [api_key, limit, limit * (offset - 1)]
       )) as SelectEmailDataTypes[];
@@ -254,8 +242,52 @@ export class EmailClassSQL implements EmailDataTypes {
       return records;
     } catch (err) {
       throw err;
-    } finally {
-      sql.end();
+    }
+  }
+
+  async updateStatusById(record: { id: string; status: string }) {
+    try {
+      await sql?.query(`update email set status = ? where id = ?; `, [
+        record.status,
+        record.id,
+      ]);
+
+      const [fetched] = (await sql?.query(`select * from email where id = ?`, [
+        record.id,
+      ])) as SelectEmailDataTypes[];
+
+      const record_data: EmailDataTypes | null | undefined = fetched[0];
+
+      if (record_data) {
+        this.status = record_data.status;
+      }
+
+      return true;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateMessageIdById(record: { id: string; message_id: string }) {
+    try {
+      await sql?.query(`update email set message_id = ? where id = ?; `, [
+        record.message_id,
+        record.id,
+      ]);
+
+      const [fetched] = (await sql?.query(`select * from email where id = ?`, [
+        record.id,
+      ])) as SelectEmailDataTypes[];
+
+      const record_data: EmailDataTypes | null | undefined = fetched[0];
+
+      if (record_data) {
+        this.message_id = record_data.message_id;
+      }
+
+      return true;
+    } catch (err) {
+      throw err;
     }
   }
 

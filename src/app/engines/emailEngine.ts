@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
 import path from "path";
 import fs from "fs";
+import { generateString, getRandomNumber } from "../utils/helpers";
 
 const ses = new aws.SES({
   region: process.env.AWS_REGION ? process.env.AWS_REGION : "",
@@ -39,8 +40,11 @@ export type AWSEmailType = {
   text?: string;
   data: Record<string, any>;
   emailAttachments: AttachmentType[];
-  template: string;
+  template?: string;
 };
+
+const g = generateString;
+let count = 0;
 
 /**
  * @typedef {Object} AttachmentType
@@ -188,33 +192,60 @@ class EmailEngine {
           }
         }
 
-        transporter.sendMail(params, (err: any, info: any) => {
-          if (err) {
-            resolve({ valid: false, err });
-          } else {
-            resolve({
-              valid: true,
-              dynamicDataListing,
-              email_data: {
-                email,
-                replyEmail,
-                sendEmail,
-                shortName,
-                subject,
-                data,
-                text,
-                emailAttachments,
-                template,
-                id,
-              },
-              info: {
-                envelope: info.envelope,
-                response: info.response,
-                messageId: info.messageId,
-              },
-            });
-          }
-        });
+        // transporter.sendMail(params, (err: any, info: any) => {
+        //   if (err) {
+        //     resolve({ valid: false, err });
+        //   } else {
+        //     resolve({
+        //       valid: true,
+        //       dynamicDataListing,
+        //       email_data: {
+        //         email,
+        //         replyEmail,
+        //         sendEmail,
+        //         shortName,
+        //         subject,
+        //         data,
+        //         text,
+        //         emailAttachments,
+        //         template,
+        //         id,
+        //       },
+        //       info: {
+        //         envelope: info.envelope,
+        //         response: info.response,
+        //         messageId: info.messageId,
+        //       },
+        //     });
+        //   }
+        // });
+
+        setTimeout(() => {
+          count++;
+          const returnData = {
+            valid: true,
+            dynamicDataListing,
+            email_data: {
+              email,
+              replyEmail,
+              sendEmail,
+              shortName,
+              subject,
+              data,
+              text,
+              emailAttachments,
+              template,
+              id,
+            },
+            info: {
+              envelope: `${g(12)}.${g(12)}.${g(12)}`,
+              response: `${g(12)}.${g(12)}.${g(12)}`,
+              messageId: `${g(12)}.${g(12)}.${g(12)}`,
+            },
+          };
+          console.log({ count });
+          resolve(returnData);
+        }, getRandomNumber(1000, 5000));
       } catch (err) {
         resolve({ valid: false, data, err });
       }

@@ -3,7 +3,7 @@ function createEmailTableSQL() {
   const script = `
 CREATE TABLE ${table_name} (
   id  VARCHAR(255) PRIMARY KEY,
-  message_id VARCHAR(255) NOT NULL UNIQUE,
+  message_id VARCHAR(255) UNIQUE,
   data VARCHAR(255) NOT NULL,
   return_api VARCHAR(255) NOT NULL,
   api_key VARCHAR(255) NOT NULL,

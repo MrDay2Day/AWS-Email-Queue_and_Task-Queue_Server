@@ -1,4 +1,4 @@
-import mysql from "mysql2/promise";
+import mysql, { ConnectionOptions } from "mysql2/promise";
 import {
   checkAndCreateMySQLDatabase,
   createMySQLTables,
@@ -13,17 +13,25 @@ export type MySQLConnectionType = {
   password: string;
 };
 
-export const mysql_connection_data: MySQLConnectionType = {
+export const mysql_connection_data: ConnectionOptions & MySQLConnectionType = {
   host: process.env.MYSQL_HOST || "",
   user: process.env.MYSQL_USER || "",
   password: process.env.MYSQL_PASS || "",
+  connectionLimit: 20,
+  waitForConnections: true,
+  enableKeepAlive: true,
 };
 
-export const mysql_connection_data_with_database: MySQLConnectionType = {
+export const mysql_connection_data_with_database: ConnectionOptions &
+  MySQLConnectionType = {
   host: process.env.MYSQL_HOST || "",
   database: process.env.MYSQL_DB || "",
   user: process.env.MYSQL_USER || "",
   password: process.env.MYSQL_PASS || "",
+  connectionLimit: 130,
+  queueLimit: 0,
+  waitForConnections: true,
+  enableKeepAlive: true,
 };
 
 // export const sql_pool = process.env.MYSQL_ACTIVE

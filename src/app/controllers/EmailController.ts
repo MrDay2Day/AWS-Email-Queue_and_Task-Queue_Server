@@ -4,7 +4,11 @@ import EmailEngine, {
   AttachmentType,
   AWSEmailType,
 } from "../engines/emailEngine";
-import { checkJSONToData, generateString } from "../utils/helpers";
+import {
+  checkJSONToData,
+  generateString,
+  getRandomNumber,
+} from "../utils/helpers";
 import { API_KEY_TYPE } from "../routers/utils/auth";
 import { Buffer } from "buffer";
 import ReturnAPIController from "./ReturnAPIController";
@@ -12,7 +16,10 @@ import ReturnAPIController from "./ReturnAPIController";
 import * as path from "path";
 import * as fs from "fs/promises";
 import { EmailClassSQL } from "../models/global/email_mysql";
-import { EmailDataTypes } from "../models/database/types/General_Types";
+import {
+  EMAIL_STATUS,
+  EmailDataTypes,
+} from "../models/database/types/General_Types";
 import { catchErrorPromise } from "../utils/catchError";
 
 type EmailDataReturnType = AWSEmailType & {
@@ -30,42 +37,64 @@ const rate_limit = process.env.AWS_SES_SEND_LIMIT_PER_SEC
 
 async function main_function(data: EmailDataReturnType): Promise<void> {
   try {
-    let STATUS: string = "PROCESSING";
-    const { valid, email_data, info, err } = await EmailEngine.AWS_SEND(data);
-
-    if (err) {
-      STATUS = "FAIL";
-    }
-
+    let STATUS: string = "QUEUE";
     const email_record = new EmailClassSQL();
-    if (info) {
-      await email_record.newRecord({
-        id: data.id,
-        data: JSON.stringify(data.data),
-        message_id: info.response,
-        email: data.email,
-        send_email: data.sendEmail,
-        subject: data.subject,
-        return_api: data.return_api,
-        attachments: data.attachments,
-        api_key: data.api_key,
-      });
+    await email_record.newRecord({
+      id: data.id,
+      data: JSON.stringify(data.data),
+      message_id: null,
+      email: data.email,
+      send_email: data.sendEmail,
+      subject: data.subject,
+      return_api: data.return_api,
+      attachments: data.attachments,
+      api_key: data.api_key,
+    });
 
-      await ReturnAPIController.post_return(data.api_key, data.return_api, {
-        status: STATUS,
-        email_id: email_record.id,
-        data: {
-          email_data: {
-            email: email_record.email,
-            send_email: email_record.send_email,
-            subject: email_record.subject,
-            data: email_record.data,
-            open: !!email_record.open,
+    try {
+      const { valid, info, err } = await EmailEngine.AWS_SEND(data);
+
+      if (err || !valid) {
+        console.log({ err });
+        await email_record.updateStatusById({
+          id: data.id,
+          status: EMAIL_STATUS.FAIL,
+        });
+      }
+
+      if (info) {
+        const updated = await email_record.updateMessageIdById({
+          id: data.id,
+          message_id: info.response,
+        });
+
+        await email_record.updateStatusById({
+          id: data.id,
+          status: EMAIL_STATUS.PENDING,
+        });
+
+        await ReturnAPIController.post_return(data.api_key, data.return_api, {
+          status: STATUS,
+          email_id: email_record.id,
+          data: {
+            email_data: {
+              email: email_record.email,
+              send_email: email_record.send_email,
+              subject: email_record.subject,
+              data: email_record.data,
+              open: !!email_record.open,
+            },
+            aws_info: info,
+            error: err,
           },
-          aws_info: info,
-          error: err,
-        },
+        });
+      }
+    } catch (error) {
+      await email_record.updateStatusById({
+        id: data.id,
+        status: EMAIL_STATUS.FAIL,
       });
+      throw error;
     }
   } catch (error) {
     await catchErrorPromise(
@@ -118,7 +147,7 @@ class EmailController {
       } = body;
       if (!email || !replyEmail || !sendEmail || !subject) {
         throw {
-          msg: "Missing Field: - Required {id: string, email: string, replyEmail: string, sendEmail: string, subject: string, data: JSON, template: string}. Optional: - Attachments: {buffer: Buffer, mimeType: string} FormData field name = 'files' maximum of 5 attached files not exceeding 25MB.",
+          msg: "Missing Field: - Required {shortName: string, email: string, replyEmail: string, sendEmail: string, subject: string, data: JSON, template: string}. Optional: - Attachments: {buffer: Buffer, mimeType: string} FormData field name = 'files' maximum of 5 attached files not exceeding 25MB.",
           code: "60021",
         };
       }
@@ -184,6 +213,7 @@ class EmailController {
       }
 
       const queue_id = `${g(20)}-${g(6)}-${g(12)}`;
+
       const data_to_process = {
         id: queue_id,
         return_api: allowed_api,
@@ -249,10 +279,12 @@ class EmailController {
           subject: result.subject,
           data: result.data,
           open: !!result.open,
+          status: result.status,
+          aws_message_id: result.message_id,
           created_at: result.created_at,
           updated_at: result.updated_at,
           attachments: result.attachments,
-          api_key: `xxxxx-xxxxxxxxxxxx_xxxxxxxx.${
+          api_key: `${result.api_key.split("-")[0]}-xxxxxxxxxxxx_xxxxxxxx.${
             result.api_key.split(".")[1]
           }`,
         });
@@ -317,10 +349,14 @@ class EmailController {
             subject: email_record.returnData().subject,
             data: email_record.returnData().data,
             open: !!email_record.returnData().open,
+            status: email_record.returnData().status,
+            aws_message_id: email_record.returnData().message_id,
             created_at: email_record.returnData().created_at,
             updated_at: email_record.returnData().updated_at,
             attachments: email_record.returnData().attachments,
-            api_key: `xxxxx-xxxxxxxxxxxx_xxxxxxxx.${
+            api_key: `${
+              email_record.returnData().api_key.split("-")[0]
+            }-xxxxxxxxxxxx_xxxxxxxx.${
               email_record.returnData().api_key.split(".")[1]
             }`,
           });

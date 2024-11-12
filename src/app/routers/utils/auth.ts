@@ -2,6 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import { connect_sql } from "../../../config/mysql/config";
 import { QueryResult } from "mysql2";
 import { APIKeyTypes } from "../../models/database/types/General_Types";
+import { Connection } from "mysql2/promise";
+
+let sql: Connection | null;
+
+(async function () {
+  sql = await connect_sql();
+})();
 
 export enum API_KEY_TYPE {
   ADMIN = "ADMIN",
@@ -54,8 +61,7 @@ export async function auth(
       return nex();
     }
 
-    const sql = await connect_sql();
-    const [fetched] = (await sql.query(
+    const [fetched] = (await sql?.query(
       `select * from api_key where api_key = ?`,
       [api_token]
     )) as SelectEmailDataTypes[];

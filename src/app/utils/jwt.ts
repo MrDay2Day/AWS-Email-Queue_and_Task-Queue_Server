@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 const expHrs = process.env.JWT_EXP_HRS || 3;
 
 // Provide types for verified token
-type VerifyType = {
+export type VerifyType = {
   [key: string]: any | unknown;
 };
 

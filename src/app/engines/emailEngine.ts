@@ -192,60 +192,62 @@ class EmailEngine {
           }
         }
 
-        // transporter.sendMail(params, (err: any, info: any) => {
-        //   if (err) {
-        //     resolve({ valid: false, err });
-        //   } else {
-        //     resolve({
-        //       valid: true,
-        //       dynamicDataListing,
-        //       email_data: {
-        //         email,
-        //         replyEmail,
-        //         sendEmail,
-        //         shortName,
-        //         subject,
-        //         data,
-        //         text,
-        //         emailAttachments,
-        //         template,
-        //         id,
-        //       },
-        //       info: {
-        //         envelope: info.envelope,
-        //         response: info.response,
-        //         messageId: info.messageId,
-        //       },
-        //     });
-        //   }
-        // });
-
-        setTimeout(() => {
-          count++;
-          const returnData = {
-            valid: true,
-            dynamicDataListing,
-            email_data: {
-              email,
-              replyEmail,
-              sendEmail,
-              shortName,
-              subject,
-              data,
-              text,
-              emailAttachments,
-              template,
-              id,
-            },
-            info: {
-              envelope: `${g(12)}.${g(12)}.${g(12)}`,
-              response: `${g(12)}.${g(12)}.${g(12)}`,
-              messageId: `${g(12)}.${g(12)}.${g(12)}`,
-            },
-          };
-          console.log({ count });
-          resolve(returnData);
-        }, getRandomNumber(1000, 5000));
+        if (!process.env.TEST) {
+          transporter.sendMail(params, (err: any, info: any) => {
+            if (err) {
+              resolve({ valid: false, err });
+            } else {
+              resolve({
+                valid: true,
+                dynamicDataListing,
+                email_data: {
+                  email,
+                  replyEmail,
+                  sendEmail,
+                  shortName,
+                  subject,
+                  data,
+                  text,
+                  emailAttachments,
+                  template,
+                  id,
+                },
+                info: {
+                  envelope: info.envelope,
+                  response: info.response,
+                  messageId: info.messageId,
+                },
+              });
+            }
+          });
+        } else {
+          setTimeout(() => {
+            count++;
+            const returnData = {
+              valid: true,
+              dynamicDataListing,
+              email_data: {
+                email,
+                replyEmail,
+                sendEmail,
+                shortName,
+                subject,
+                data,
+                text,
+                emailAttachments,
+                template,
+                id,
+              },
+              info: {
+                envelope: `${g(12)}.${g(12)}.${g(12)}`,
+                response: `${g(12)}.${g(12)}.${g(12)}`,
+                messageId: `${g(12)}.${g(12)}.${g(12)}`,
+              },
+            };
+            console.log({ count });
+            resolve(returnData);
+          }, getRandomNumber(1000, 5000));
+        }
       } catch (err) {
         resolve({ valid: false, data, err });
       }

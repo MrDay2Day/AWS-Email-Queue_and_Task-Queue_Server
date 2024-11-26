@@ -20,6 +20,11 @@ export default class TrackerController {
         .end(Buffer.from("R0lGODlhAQABAAAAACwAAAAAAQABAAA=", "base64"));
 
       const emailId = req.query.id as string;
+
+      if (!emailId) {
+        throw { msg: "Invalid!", status: 401, code: "6341200" };
+      }
+
       const email_record = new EmailClassSQL();
       await email_record.fetchInfo({ id: emailId });
       if (!email_record.open) {
@@ -51,7 +56,7 @@ export default class TrackerController {
       return res.status(error.status || 200).json({
         msg: error.msg || error.sqlMessage || "Something went wrong.",
         valid: false,
-        code: `TRK001_${error.code || "00001"}`,
+        code: `TRK001_${error.code || "00045"}`,
       });
     }
   }
@@ -63,6 +68,9 @@ export default class TrackerController {
   ): Promise<any> {
     try {
       const messageType = req.headers["x-amz-sns-message-type"];
+      if (!messageType) {
+        throw { msg: "Invalid!", status: 401, code: "6341199" };
+      }
       const messageJson = req.body;
 
       const message: any = {};

@@ -63,6 +63,7 @@ then by executing `generate_admin_api_key.sh` this will generate a new `ADMIN_AP
 | ADMIN_API_KEY              | -                          | This API Key is used to do admin actions.       |
 | PORT                       | 3852                       | Port for server.                                |
 | NODE_ENV                   | dev                        | Either 'dev' or 'production'.                   |
+| TEST                       | y                          | Simulate sending emails to AWS.                 |
 | NODE_VERSION               | node:22.6                  | Node Version for docker.                        |
 | APP_NAME                   | Day2Day Email/Queue Server | Application name.                               |
 | APP_URL                    | -                          | The domain for the server eg: https://a.bcd.com |
@@ -261,7 +262,7 @@ API Keys are managed using the `ADMIN_API_KEY` as `Bearer` Token in the `Authori
 
 Send a `POST` request to the Email/Queue Server
 
-`{{SERVER}}/server/api/create`
+`{{SERVER}}/server/api/create` `POST`
 
 Required:
 
@@ -296,6 +297,10 @@ Required:
 }
 ```
 
+## --
+
+## --
+
 **Request 2** - With expiry date of 4 days
 
 ```json
@@ -323,7 +328,7 @@ Required:
 
 To delete and API Key send a `POST` request with either `api_name` **or** `api_key` to the Email/Queue Server
 
-`{{SERVER}}/server/api/delete`
+`{{SERVER}}/server/api/delete` `POST`
 
 | Field    | Description     |
 | -------- | --------------- |
@@ -355,6 +360,46 @@ If the request is successful `valid` will be `true` else `false` with a error me
 ```JSON
 {
     "valid": true
+}
+```
+
+## Verify Return Token
+
+This is a `POST` request to verify the return `JWT` token to your server that is sent in the Authentication header to your server as a `Bearer Token`.
+
+`{{SERVER}}/server/api/verify` `POST`
+
+| Field | Description |
+| ----- | ----------- |
+| token | JWT Token   |
+
+<br/>
+
+**Request**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImFwaV9nZW5fY29kZSI6IjFHZ0RQWlMyRmNLblM4RC41MXRvWlhwRVZvLkxLNmJKVEsxIiwidXJsIjoiaHR0cDovLzE5Mi4xNjguMC4xMjA6NDA0Mi9iaWRzcXVhd2sifSwiaWF0IjoxNzMyNjM3MzE1LCJleHAiOjE3MzI2NDgxMTV9.hH32CCGVo-KO01Z2_TnP_tyXOsXWghjCCExLQjlgRlk"
+}
+```
+
+**Response**
+
+If the request and token is successful `valid` will be `true` else `false` with a error message `msg`.
+
+```JSON
+{
+    "valid": true
+}
+```
+
+or
+
+```JSON
+{
+    "msg": "invalid signature",
+    "valid": false,
+    "code": "API065_00005"
 }
 ```
 
@@ -401,7 +446,7 @@ Example:
 
 Make a `Form-data` `POST` request to the Email/Queue Server with just the file. The filename of the html file will also be the template name.
 
-`{{SERVER}}/server/email/add-template`
+`{{SERVER}}/server/email/add-template` `POST`
 
 Eg: If the file name is `welcome-email.html` then the template name is `welcome-email`.
 
@@ -426,7 +471,7 @@ What the server expects to see:
 
 You are able to see all templates stored on your server by sending a `POST` request, because this server can be used as a microservice for multiple applications and services depending on your server configuration you will be able to store hundreds of templates.
 
-`{{SERVER}}/server/email/list-templates`
+`{{SERVER}}/server/email/list-templates` `POST`
 
 | Variable | Description                                           |
 | -------- | ----------------------------------------------------- |
@@ -459,7 +504,7 @@ You are able to see all templates stored on your server by sending a `POST` requ
 
 To remove a template simply provide the template name in a `POST` request.
 
-`{{SERVER}}/server/email/remove-template`
+`{{SERVER}}/server/email/remove-template` `POST`
 
 **Request**
 
@@ -524,7 +569,7 @@ To edit: `src/middleware/multer.ts`
 
 `Form-data` fields required for adding an email to the email queue.
 
-`{{SERVER}}/server/email/add`
+`{{SERVER}}/server/email/add` `POST` `FORMDATA`
 
 | Key        | Type          | Required | Description                                                      |
 | ---------- | ------------- | -------- | ---------------------------------------------------------------- |
@@ -570,7 +615,7 @@ There are two methods for fetching these records:
 
 Retrieving a specific set of records (max 20 per request) using the queue_id by send a `POST` request.
 
-`{{SERVER}}/server/email/fetch-specific-records`
+`{{SERVER}}/server/email/fetch-specific-records` `POST`
 
 | Key       | Type      | Value                                  |
 | --------- | --------- | -------------------------------------- |
@@ -610,7 +655,7 @@ Retrieving a specific set of records (max 20 per request) using the queue_id by 
 
 Retrieving previously sent emails ordered by the most recent date, with a maximum of 50 records per request, in a paginated format.
 
-`{{SERVER}}/server/email/fetch-api-records`
+`{{SERVER}}/server/email/fetch-api-records` `POST`
 
 | Key    | Type   | Value                                       |
 | ------ | ------ | ------------------------------------------- |
@@ -654,6 +699,7 @@ Retrieving previously sent emails ordered by the most recent date, with a maximu
 
 | Status     | Payload                                                 | Description                                            |
 | ---------- | ------------------------------------------------------- | ------------------------------------------------------ |
+| QUEUE      | {status, email_id, data: {email_data, aws_info}}        | Email queued to be sent.                               |
 | PROCESSING | {status, email_id, data: {email_data, aws_info}}        | Email is the process of being sent.                    |
 | SENT       | {status, email_id, data: {email_data, aws_data}}        | Email sent but not delivered.                          |
 | ERROR      | {status, email_id, data: {email_data, aws_info, error}} | Error sending email.                                   |
@@ -737,7 +783,7 @@ A `JWT` will be sent back as a `Bearer` token to your server/service ensure that
 
 To add a task to the queue is simply done by sending a `POST` request with the following variables
 
-`{{SERVER}}/server/queue/add`
+`{{SERVER}}/server/queue/add` `POST`
 
 | Variable   | Description                                     |
 | ---------- | ----------------------------------------------- |
@@ -770,7 +816,7 @@ To add a task to the queue is simply done by sending a `POST` request with the f
 
 To remove a task to the queue is simply done by sending a `POST` request with the following variables
 
-`{{SERVER}}/server/queue/remove`
+`{{SERVER}}/server/queue/remove` `POST`
 
 | Variable | Description               |
 | -------- | ------------------------- |

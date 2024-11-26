@@ -15,6 +15,7 @@ declare global {
       // General
       PORT: string;
       NODE_ENV: string;
+      TEST: string;
       APP_NAME: string;
       APP_CONTAINER_NAME: string;
       MAX_UPLOAD_SIZE: string;

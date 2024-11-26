@@ -24,6 +24,12 @@ export default class LineQueue<T, R> {
   private interval: number;
 
   /**
+   * The number of items completed.
+   * @type {number}
+   */
+  private completed: number;
+
+  /**
    * The number of items processed in the current batch.
    * @type {number}
    */
@@ -69,7 +75,8 @@ export default class LineQueue<T, R> {
     this.queue = [];
     this.interval = interval;
     this.executed = 0;
-    this.checkInterval = 1000;
+    this.completed = 0;
+    this.checkInterval = 50;
     this.queueFunction = queueFunction;
     this.init();
   }
@@ -79,8 +86,11 @@ export default class LineQueue<T, R> {
    * @private
    */
   private init() {
-    this.intervalId = setInterval(() => {}, this.checkInterval);
-    this.startQueue();
+    this.intervalId = setInterval(() => {
+      if (this.executed < this.interval) {
+        this.startQueue();
+      }
+    }, this.checkInterval);
   }
 
   /**
@@ -106,17 +116,18 @@ export default class LineQueue<T, R> {
    * @private
    * @returns {Promise<void>}
    */
-
   private async startQueue(): Promise<void> {
     if (this.queue && this.queue.length > 0) {
       if (this.executed >= this.interval) {
         return;
       }
-      this.executed++;
+      this.executed = this.executed + 1;
       const tempt = this.queue[0];
-      this.queue = this.queue.filter(
-        (qt) => JSON.stringify(qt) !== JSON.stringify(tempt)
-      );
+
+      this.queue = this.queue.filter((qt) => {
+        // @ts-expect-error: should work here
+        return qt.id !== tempt.id;
+      });
 
       try {
         const response = await this.queueFunction(tempt);
@@ -124,16 +135,14 @@ export default class LineQueue<T, R> {
         this.emit("success", [response, tempt]);
       } catch (error) {
         this.emit("error", [error, tempt]);
-      }
-
-      if (this.executed === this.interval) {
-        this.executed = 0;
-        console.log(`Triggering next ${this.interval}.`);
-        setTimeout(() => this.startQueue(), this.wait);
-      } else if (this.executed < this.interval) {
-        this.startQueue();
-      } else {
-        console.log("Queue processing...");
+      } finally {
+        this.completed = this.completed + 1;
+        if (this.executed >= this.interval && this.completed >= this.interval) {
+          setTimeout(() => {
+            this.executed = 0;
+            this.completed = 0;
+          }, this.wait);
+        }
       }
     }
   }
@@ -144,12 +153,7 @@ export default class LineQueue<T, R> {
    * @param {T} x - The item to add to the queue.
    */
   add(x: T) {
-    if (this.queue.length > 0) {
-      this.queue.push(x);
-    } else {
-      this.queue.push(x);
-      this.startQueue();
-    }
+    this.queue.push(x);
   }
 
   /**

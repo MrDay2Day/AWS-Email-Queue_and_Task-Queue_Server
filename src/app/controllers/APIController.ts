@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { addTime, generateString as g } from "../utils/helpers";
 import { APIClassSQLClass } from "../models/global/api_mysql";
 import { API_KEY_TYPE } from "../routers/utils/auth";
+import { verifyToken, VerifyType } from "../utils/jwt";
 
 class APIController {
   static async addAPI(req: Request, res: Response): Promise<any> {
@@ -95,9 +96,37 @@ class APIController {
     } catch (error: any) {
       console.log({ error });
       return res.status(error.status || 200).json({
-        msg: error.msg || error.sqlMessage || "Something went wrong.",
+        msg:
+          error.msg ||
+          error.message ||
+          error.sqlMessage ||
+          "Something went wrong.",
         valid: false,
-        code: `API064_${error.code || "00001"}`,
+        code: `API064_${error.code || "00002"}`,
+      });
+    }
+  }
+
+  static async verify(req: Request, res: Response): Promise<any> {
+    try {
+      if (req.api_key_type !== API_KEY_TYPE.USER) {
+        throw { msg: "Not Authorized!", status: 401, code: "6341192" };
+      }
+
+      const { token } = req.body as { token: string };
+      if (!token) {
+        throw { msg: "Invalid!", status: 400, code: "6341361" };
+      }
+
+      await verifyToken(token);
+
+      res.status(200).json({ valid: true });
+    } catch (error: any) {
+      console.log({ error });
+      return res.status(error.status || 200).json({
+        msg: error.msg || error.message || "Something went wrong.",
+        valid: false,
+        code: `API065_${error.code || "00005"}`,
       });
     }
   }

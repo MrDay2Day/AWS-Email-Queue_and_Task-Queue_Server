@@ -1,10 +1,13 @@
-import mysql, { ConnectionOptions } from "mysql2/promise";
+import mysql, { Connection, ConnectionOptions } from "mysql2/promise";
 import {
   checkAndCreateMySQLDatabase,
   createMySQLTables,
 } from "../../app/models/database/mysql/trigger";
 import { text_bright_magenta } from "../../utils/serverDataInfo";
+import { typeExtractor } from "../../app/utils/typeExtractor";
 const sql_promise = mysql;
+
+export let sql: Connection;
 
 export type MySQLConnectionType = {
   host: string;
@@ -13,8 +16,23 @@ export type MySQLConnectionType = {
   password: string;
 };
 
+let PORT: number = 0;
+
+const [port_err, port_info] = typeExtractor(process.env.PORT);
+if (port_err) {
+  PORT = 3306;
+}
+if (
+  port_info &&
+  port_info[0] === "number" &&
+  typeof port_info[1] === "number"
+) {
+  PORT = port_info[1];
+}
+
 export const mysql_connection_data: ConnectionOptions & MySQLConnectionType = {
   host: process.env.MYSQL_HOST || "",
+  // port: PORT,
   user: process.env.MYSQL_USER || "",
   password: process.env.MYSQL_PASS || "",
   connectionLimit: 20,
@@ -25,6 +43,7 @@ export const mysql_connection_data: ConnectionOptions & MySQLConnectionType = {
 export const mysql_connection_data_with_database: ConnectionOptions &
   MySQLConnectionType = {
   host: process.env.MYSQL_HOST || "",
+  // port: PORT,
   database: process.env.MYSQL_DB || "",
   user: process.env.MYSQL_USER || "",
   password: process.env.MYSQL_PASS || "",
@@ -37,6 +56,8 @@ export const mysql_connection_data_with_database: ConnectionOptions &
 // export const sql_pool = process.env.MYSQL_ACTIVE
 //   ? sql_promise.createConnection(connection_data)
 //   : null;
+
+let sql_connected: boolean = false;
 
 export const sql_pool = async function (configuration: MySQLConnectionType) {
   return await sql_promise.createConnection(configuration);
@@ -61,9 +82,9 @@ export const sql_pool = async function (configuration: MySQLConnectionType) {
  * sql.end();
  */
 export const connect_sql = async function () {
-  return await sql_promise.createConnection(
-    mysql_connection_data_with_database
-  );
+  await ConnectMySQL();
+
+  return await sql_pool(mysql_connection_data_with_database);
 };
 
 export function ConnectMySQL(): Promise<{
@@ -78,7 +99,10 @@ export function ConnectMySQL(): Promise<{
 
       await createMySQLTables(my_sql_access);
       const data = await my_sql_access.connect();
-      my_sql_access.end();
+      sql_connected = true;
+      await my_sql_access.end();
+
+      sql = await sql_pool(mysql_connection_data_with_database);
 
       console.log(text_bright_magenta("\tMYSQL DATABASE CONNECTED!\n"));
       resolve({ valid: true, data });

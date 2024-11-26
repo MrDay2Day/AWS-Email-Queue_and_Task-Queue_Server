@@ -24,9 +24,10 @@ class DBConfiguration {
       return start_server(server);
     } catch (error) {
       //
-      console.log("DBConfiguration.initiate", { error });
-      console.log("Restarting Server in 10s");
-      setTimeout(() => this.initiate(server), 10000);
+      // console.log("DBConfiguration.initiate", { error });
+      // console.log("Restarting Server in 10s");
+      // setTimeout(() => this.initiate(server), 10000);
+      throw error;
     }
   }
 

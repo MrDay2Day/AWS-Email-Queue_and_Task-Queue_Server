@@ -1,6 +1,39 @@
 name: ${APP_CONTAINER_NAME}-container-dev
 services:
-  node-server:
+  aws-queue-mysql-db:
+    image: mysql:8.0
+    container_name: server-mysql
+    restart: unless-stopped
+    networks:
+      - main_network
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: main_datae
+      MYSQL_USER: main_user
+      MYSQL_PASSWORD: user_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/my.cnf:/etc/mysql/my.cnf
+    ports:
+      - "3959:3306"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 30s
+
+  aws-queue-node-server:
     restart: unless-stopped
     networks:
       - main_network
@@ -23,23 +56,8 @@ services:
     ports:
       - "${PORT}:${PORT}"
     command: npx ts-node-dev --poll --watch ./src/* --respawn ./src/server.ts
-
-  mysql:
-    image: mysql:8.0
-    container_name: server-mysql
-    restart: unless-stopped
-    networks:
-      - main_network
-    environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: main_datae
-      MYSQL_USER: main_user
-      MYSQL_PASSWORD: user_password
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./sql/my.cnf:/etc/mysql/my.cnf
-    ports:
-      - "3959:3306"
+    depends_on:
+      - aws-queue-mysql-db
 
 networks:
   main_network:

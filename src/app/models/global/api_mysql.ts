@@ -3,17 +3,21 @@
 import { v4 as uuidv4 } from "uuid";
 
 import { QueryResult } from "mysql2";
-import { connect_sql } from "../../../config/mysql/config";
+import { connect_sql, sql } from "../../../config/mysql/config";
 import { APIKeyTypes } from "../database/types/General_Types";
 import { Connection } from "mysql2/promise";
 
 type SelectEmailDataTypes = QueryResult & [APIKeyTypes];
 
-let sql: Connection | null;
+// let sql: Connection | null;
 
-(async function () {
-  sql = await connect_sql();
-})();
+// (async function () {
+//   try {
+//     sql = await connect_sql();
+//   } catch (error) {
+//     // throw error;
+//   }
+// })();
 
 export class APIClassSQLClass implements APIKeyTypes {
   id: string;
@@ -62,15 +66,17 @@ export class APIClassSQLClass implements APIKeyTypes {
 
       const record_data: APIKeyTypes | null | undefined = fetched[0];
 
-      if (record_data) {
-        this.id = record_data.id;
-        this.api_key = record_data.api_key;
-        this.api_name = record_data.api_name;
-        this.return_api = record_data.return_api;
-        this.temporary = record_data.temporary;
-        this.expire_date = record_data.expire_date;
-        this.created_at = record_data.created_at;
+      if (Object.keys(record_data).length <= 0) {
+        throw new Error("Something went wrong");
       }
+
+      this.id = record_data.id;
+      this.api_key = record_data.api_key;
+      this.api_name = record_data.api_name;
+      this.return_api = record_data.return_api;
+      this.temporary = record_data.temporary;
+      this.expire_date = record_data.expire_date;
+      this.created_at = record_data.created_at;
     } catch (err) {
       throw err;
     }

@@ -3,17 +3,21 @@
 import { v4 as uuidv4 } from "uuid";
 
 import { QueryResult } from "mysql2";
-import { connect_sql, sql_pool } from "../../../config/mysql/config";
+import { connect_sql, sql, sql_pool } from "../../../config/mysql/config";
 import { EMAIL_STATUS, EmailDataTypes } from "../database/types/General_Types";
 import { Connection } from "mysql2/promise";
 
 type SelectEmailDataTypes = QueryResult & [EmailDataTypes];
 
-let sql: Connection | null;
+// let sql: Connection | null;
 
-(async function () {
-  sql = await connect_sql();
-})();
+// (async function () {
+//   try {
+//     sql = await connect_sql();
+//   } catch (error) {
+//     // throw error;
+//   }
+// })();
 
 export class EmailClassSQL implements EmailDataTypes {
   id: string;
@@ -59,7 +63,7 @@ export class EmailClassSQL implements EmailDataTypes {
     attachments: number;
   }) {
     try {
-      const [info] = (await sql?.query(
+      await sql?.query(
         `insert into email(id, data, message_id, return_api, status, open, api_key, email, send_email, subject, attachments) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           record.id,
@@ -74,31 +78,31 @@ export class EmailClassSQL implements EmailDataTypes {
           record.subject,
           record.attachments,
         ]
-      )) as { insertId: number }[];
-
-      const insertedId = info.insertId;
+      );
 
       const [fetched] = (await sql?.query(`select * from email where id = ?`, [
-        insertedId,
+        record.id,
       ])) as SelectEmailDataTypes[];
 
       const record_data: EmailDataTypes | null | undefined = fetched[0];
 
-      if (record_data) {
-        this.id = record_data.id;
-        this.api_key = record_data.api_key;
-        this.email = record_data.email;
-        this.send_email = record_data.send_email;
-        this.subject = record_data.subject;
-        this.message_id = record_data.message_id;
-        this.data = record_data.data;
-        this.return_api = record_data.return_api;
-        this.attachments = record_data.attachments;
-        this.status = record_data.status;
-        this.open = record_data.open;
-        this.updated_at = record_data.updated_at;
-        this.created_at = record_data.created_at;
+      if (Object.keys(record_data).length <= 0) {
+        throw new Error("Something went wrong");
       }
+
+      this.id = record_data.id;
+      this.api_key = record_data.api_key;
+      this.email = record_data.email;
+      this.send_email = record_data.send_email;
+      this.subject = record_data.subject;
+      this.message_id = record_data.message_id;
+      this.data = record_data.data;
+      this.return_api = record_data.return_api;
+      this.attachments = record_data.attachments;
+      this.status = record_data.status;
+      this.open = record_data.open;
+      this.updated_at = record_data.updated_at;
+      this.created_at = record_data.created_at;
 
       return true;
     } catch (err) {
@@ -204,21 +208,22 @@ export class EmailClassSQL implements EmailDataTypes {
 
       const record_data: EmailDataTypes | null | undefined = fetched[0];
 
-      if (record_data) {
-        this.id = record_data.id;
-        this.api_key = record_data.api_key;
-        this.email = record_data.email;
-        this.send_email = record_data.send_email;
-        this.subject = record_data.subject;
-        this.message_id = record_data.message_id;
-        this.data = record_data.data;
-        this.return_api = record_data.return_api;
-        this.attachments = record_data.attachments;
-        this.status = record_data.status;
-        this.open = record_data.open;
-        this.updated_at = record_data.updated_at;
-        this.created_at = record_data.created_at;
+      if (Object.keys(record_data).length <= 0) {
+        throw new Error("Something went wrong");
       }
+      this.id = record_data.id;
+      this.api_key = record_data.api_key;
+      this.email = record_data.email;
+      this.send_email = record_data.send_email;
+      this.subject = record_data.subject;
+      this.message_id = record_data.message_id;
+      this.data = record_data.data;
+      this.return_api = record_data.return_api;
+      this.attachments = record_data.attachments;
+      this.status = record_data.status;
+      this.open = record_data.open;
+      this.updated_at = record_data.updated_at;
+      this.created_at = record_data.created_at;
 
       return true;
     } catch (err) {
@@ -281,9 +286,10 @@ export class EmailClassSQL implements EmailDataTypes {
 
       const record_data: EmailDataTypes | null | undefined = fetched[0];
 
-      if (record_data) {
-        this.message_id = record_data.message_id;
+      if (Object.keys(record_data).length <= 0) {
+        throw new Error("Something went wrong");
       }
+      this.message_id = record_data.message_id;
 
       return true;
     } catch (err) {

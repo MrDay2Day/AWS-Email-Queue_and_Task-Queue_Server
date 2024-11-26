@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { addTime, generateString as g } from "../utils/helpers";
 import { APIClassSQLClass } from "../models/global/api_mysql";
 import { API_KEY_TYPE } from "../routers/utils/auth";
-import { verifyToken, VerifyType } from "../utils/jwt";
+import { verifyToken } from "../utils/jwt";
 
 class APIController {
   static async addAPI(req: Request, res: Response): Promise<any> {

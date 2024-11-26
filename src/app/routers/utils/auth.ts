@@ -1,14 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import { connect_sql } from "../../../config/mysql/config";
+import { sql } from "../../../config/mysql/config";
 import { QueryResult } from "mysql2";
 import { APIKeyTypes } from "../../models/database/types/General_Types";
-import { Connection } from "mysql2/promise";
-
-let sql: Connection | null;
-
-(async function () {
-  sql = await connect_sql();
-})();
 
 export enum API_KEY_TYPE {
   ADMIN = "ADMIN",

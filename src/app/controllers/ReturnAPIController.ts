@@ -1,5 +1,5 @@
 import { createToken } from "../utils/jwt";
-import { generateString as g, getRandomNumber } from "../utils/helpers";
+import { generateString as g } from "../utils/helpers";
 
 export default class ReturnAPIController {
   static async post_return(api_key: string, url: string, data: any) {

@@ -17,7 +17,7 @@ import http from "http";
 import DBConfiguration from "./config/db_config";
 import { text_bright, text_bright_red } from "./utils/serverDataInfo";
 
-function start(): void {
+async function start(): Promise<void> {
   try {
     console.log(
       text_bright(`
@@ -35,10 +35,11 @@ function start(): void {
     console.log("INITIALIZING SERVER...");
     const server = http.createServer(app);
     console.log("WEBSERVER INITIALIZED!\n");
-    DBConfiguration.initiate(server);
+    await DBConfiguration.initiate(server);
   } catch (error) {
     console.log("SERVER ERROR", { error });
-    start();
+    console.log("Restarting Server in 10s");
+    setTimeout(async () => await start(), 10000);
   }
 }
 

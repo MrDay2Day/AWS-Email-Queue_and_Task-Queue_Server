@@ -4,11 +4,7 @@ import EmailEngine, {
   AttachmentType,
   AWSEmailType,
 } from "../engines/emailEngine";
-import {
-  checkJSONToData,
-  generateString,
-  getRandomNumber,
-} from "../utils/helpers";
+import { checkJSONToData, generateString } from "../utils/helpers";
 import { API_KEY_TYPE } from "../routers/utils/auth";
 import { Buffer } from "buffer";
 import ReturnAPIController from "./ReturnAPIController";
@@ -16,10 +12,7 @@ import ReturnAPIController from "./ReturnAPIController";
 import * as path from "path";
 import * as fs from "fs/promises";
 import { EmailClassSQL } from "../models/global/email_mysql";
-import {
-  EMAIL_STATUS,
-  EmailDataTypes,
-} from "../models/database/types/General_Types";
+import { EMAIL_STATUS } from "../models/database/types/General_Types";
 import { catchErrorPromise } from "../utils/catchError";
 
 type EmailDataReturnType = AWSEmailType & {
@@ -75,7 +68,7 @@ async function main_function(data: EmailDataReturnType): Promise<void> {
 
         await ReturnAPIController.post_return(data.api_key, data.return_api, {
           status: STATUS,
-          email_id: email_record.id,
+          email_id: data.id,
           data: {
             email_data: {
               email: email_record.email,

@@ -1,4 +1,9 @@
-import mysql, { Connection, ConnectionOptions } from "mysql2/promise";
+import mysql, {
+  Connection,
+  ConnectionOptions,
+  FieldPacket,
+  QueryResult,
+} from "mysql2/promise";
 import {
   checkAndCreateMySQLDatabase,
   createMySQLTables,
@@ -7,7 +12,7 @@ import { text_bright_magenta } from "../../utils/serverDataInfo";
 import { typeExtractor } from "../../app/utils/typeExtractor";
 const sql_promise = mysql;
 
-export let sql: Connection;
+export let sql_conn: Connection;
 
 export type MySQLConnectionType = {
   host: string;
@@ -102,7 +107,7 @@ export function ConnectMySQL(): Promise<{
       sql_connected = true;
       await my_sql_access.end();
 
-      sql = await sql_pool(mysql_connection_data_with_database);
+      sql_conn = await sql_pool(mysql_connection_data_with_database);
 
       console.log(text_bright_magenta("\tMYSQL DATABASE CONNECTED!\n"));
       resolve({ valid: true, data });
@@ -112,4 +117,30 @@ export function ConnectMySQL(): Promise<{
       reject({ valid: false, error });
     }
   });
+}
+
+async function checkConnection(connection: mysql.Connection): Promise<boolean> {
+  try {
+    // Try executing a simple query to check if the connection is still alive
+    await connection.query("SELECT 1");
+    return true; // Connection is open
+  } catch (err) {
+    console.error("Connection error:", err);
+    return false; // Connection is closed or has an error
+  }
+}
+
+export class sql {
+  static async query<T extends QueryResult>(
+    qry: string,
+    qry_var: any[]
+  ): Promise<[T, FieldPacket[]]> {
+    const check = await checkConnection(sql_conn);
+    if (check) {
+      return await sql_conn.query(qry, qry_var);
+    }
+
+    sql_conn = await sql_pool(mysql_connection_data_with_database);
+    return await sql_conn.query(qry, qry_var);
+  }
 }

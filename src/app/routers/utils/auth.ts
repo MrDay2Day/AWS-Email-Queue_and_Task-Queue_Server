@@ -23,7 +23,7 @@ const ADMIN_API_KEY = process.env.ADMIN_API_KEY
   ? process.env.ADMIN_API_KEY
   : "";
 
-type SelectEmailDataTypes = QueryResult & [APIKeyTypes];
+type SelectAPIKeyDataTypes = QueryResult & [APIKeyTypes];
 
 export async function auth(
   req: Request,
@@ -57,7 +57,7 @@ export async function auth(
     const [fetched] = (await sql?.query(
       `select * from api_key where api_key = ?`,
       [api_token]
-    )) as SelectEmailDataTypes[];
+    )) as SelectAPIKeyDataTypes[];
 
     if (fetched.length < 1) {
       notAuth("Invalid API key", 1002);

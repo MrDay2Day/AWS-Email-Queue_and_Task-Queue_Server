@@ -78,7 +78,6 @@ export default class LineQueue<T, R> {
     this.completed = 0;
     this.checkInterval = 50;
     this.queueFunction = queueFunction;
-    this.init();
   }
 
   /**
@@ -87,10 +86,21 @@ export default class LineQueue<T, R> {
    */
   private init() {
     this.intervalId = setInterval(() => {
-      if (this.executed < this.interval) {
+      if (this.queue.length <= 0) {
+        this.killInterval();
+      } else if (this.executed < this.interval) {
         this.startQueue();
       }
     }, this.checkInterval);
+  }
+
+  private killInterval() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+      this.completed = 0;
+      this.executed = 0;
+    }
   }
 
   /**
@@ -154,6 +164,9 @@ export default class LineQueue<T, R> {
    */
   add(x: T) {
     this.queue.push(x);
+    if (!this.intervalId) {
+      this.init();
+    }
   }
 
   /**

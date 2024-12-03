@@ -4,7 +4,11 @@ import { v4 as uuidv4 } from "uuid";
 
 import { QueryResult } from "mysql2";
 import { connect_sql, sql, sql_pool } from "../../../config/mysql/config";
-import { EMAIL_STATUS, EmailDataTypes } from "../database/types/General_Types";
+import {
+  EMAIL_STATUS,
+  EMAIL_TYPE,
+  EmailDataTypes,
+} from "../database/types/General_Types";
 import { Connection } from "mysql2/promise";
 
 type SelectEmailDataTypes = QueryResult & [EmailDataTypes];
@@ -27,6 +31,7 @@ export class EmailClassSQL implements EmailDataTypes {
   subject: string;
   message_id: string | null;
   data: string;
+  type: EMAIL_TYPE;
   return_api: string;
   attachments?: number;
   status: EMAIL_STATUS;
@@ -41,6 +46,7 @@ export class EmailClassSQL implements EmailDataTypes {
     this.subject = "";
     this.message_id = "";
     this.data = "";
+    this.type = EMAIL_TYPE.PROMOTIONAL;
     this.return_api = "";
     this.attachments = 0;
     this.status = EMAIL_STATUS.PENDING;
@@ -60,11 +66,12 @@ export class EmailClassSQL implements EmailDataTypes {
     subject: string;
     return_api: string;
     api_key: string;
+    type: EMAIL_TYPE;
     attachments: number;
   }) {
     try {
       await sql?.query(
-        `insert into email(id, data, message_id, return_api, status, open, api_key, email, send_email, subject, attachments) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `insert into email(id, data, message_id, return_api, status, open, api_key, email, send_email, subject, attachments, type) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           record.id,
           record.data,
@@ -77,6 +84,7 @@ export class EmailClassSQL implements EmailDataTypes {
           record.send_email,
           record.subject,
           record.attachments,
+          record.type,
         ]
       );
 
@@ -101,6 +109,7 @@ export class EmailClassSQL implements EmailDataTypes {
       this.attachments = record_data.attachments;
       this.status = record_data.status;
       this.open = record_data.open;
+      this.type = record_data.type;
       this.updated_at = record_data.updated_at;
       this.created_at = record_data.created_at;
 
@@ -136,6 +145,7 @@ export class EmailClassSQL implements EmailDataTypes {
         this.attachments = record_data.attachments;
         this.status = record_data.status;
         this.open = record_data.open;
+        this.type = record_data.type;
         this.updated_at = record_data.updated_at;
         this.created_at = record_data.created_at;
       }
@@ -222,6 +232,7 @@ export class EmailClassSQL implements EmailDataTypes {
       this.attachments = record_data.attachments;
       this.status = record_data.status;
       this.open = record_data.open;
+      this.type = record_data.type;
       this.updated_at = record_data.updated_at;
       this.created_at = record_data.created_at;
 
@@ -310,6 +321,7 @@ export class EmailClassSQL implements EmailDataTypes {
       return_api: this.return_api,
       attachments: this.attachments,
       open: this.open,
+      type: this.type,
       updated_at: this.updated_at,
       created_at: this.created_at,
     };

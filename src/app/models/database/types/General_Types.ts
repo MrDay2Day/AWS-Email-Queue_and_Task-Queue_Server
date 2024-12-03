@@ -7,6 +7,10 @@ export enum EMAIL_STATUS {
   QUEUE = "QUEUE",
   FAIL = "FAIL",
 }
+export enum EMAIL_TYPE {
+  TRANSACTIONAL = "TRANSACTIONAL",
+  PROMOTIONAL = "PROMOTIONAL",
+}
 
 export type EmailDataTypes = {
   readonly id: string;
@@ -19,6 +23,7 @@ export type EmailDataTypes = {
   readonly return_api: string;
   readonly attachments?: number;
   status: EMAIL_STATUS;
+  readonly type: EMAIL_TYPE;
   open: Boolean;
   readonly updated_at: Date;
   readonly created_at: Date;

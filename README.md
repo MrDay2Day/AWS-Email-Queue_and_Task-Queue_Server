@@ -58,30 +58,31 @@ then by executing `generate_admin_api_key.sh` this will generate a new `ADMIN_AP
 
 # Environment Variables
 
-| Variable                   | Default Value              | Description                                     |
-| -------------------------- | -------------------------- | ----------------------------------------------- |
-| ADMIN_API_KEY              | -                          | This API Key is used to do admin actions.       |
-| PORT                       | 3852                       | Port for server.                                |
-| NODE_ENV                   | dev                        | Either 'dev' or 'production'.                   |
-| TEST                       | y                          | Simulate sending emails to AWS.                 |
-| NODE_VERSION               | node:22.6                  | Node Version for docker.                        |
-| APP_NAME                   | Day2Day Email/Queue Server | Application name.                               |
-| APP_URL                    | -                          | The domain for the server eg: https://a.bcd.com |
-| APP_CONTAINER_NAME         | d2d_email_queue            | Docker container name                           |
-| MAX_UPLOAD_SIZE            | 25                         | Max upload size for server per request.         |
-| SALT                       | -                          | Secret SALT to create JWT.                      |
-| JWT_EXP_HRS                | 3                          | Expire time for JWT in hrs.                     |
-| AWS_REGION                 | -                          | AWS SMTP Settings.                              |
-| AWS_ACCESS_KEY_ID          | -                          | AWS SMTP Settings.                              |
-| AWS_SECRET_ACCESS_KEY      | -                          | AWS SMTP Settings.                              |
-| AWS_SES_SEND_LIMIT_PER_SEC | 10                         | 10 emails pre second.                           |
-| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch in ms.       |
-| AWS_CONFIG_SET_NAME        | email-status               | The default configuration set name for SES.     |
-| MYSQL_HOST                 | server-mysql               | Default for docker.                             |
-| MYSQL_USER                 | root                       | Default for docker.                             |
-| MYSQL_PASS                 | root_password              | Default for docker.                             |
-| MYSQL_PORT                 | 3959                       | Default for docker.                             |
-| MYSQL_DB                   | d2d_email_queue            | Default for docker.                             |
+| Variable                   | Default Value              | Description                                                                           |
+| -------------------------- | -------------------------- | ------------------------------------------------------------------------------------- |
+| ADMIN_API_KEY              | -                          | This API Key is used to do admin actions.                                             |
+| PORT                       | 3852                       | Port for server.                                                                      |
+| TEST                       | y                          | This puts the Emailing functionality in test mode and will simulate sending an email. |
+| NODE_ENV                   | dev                        | Either 'dev' or 'production'.                                                         |
+| TEST                       | y                          | Simulate sending emails to AWS.                                                       |
+| NODE_VERSION               | node:22.6                  | Node Version for docker.                                                              |
+| APP_NAME                   | Day2Day Email/Queue Server | Application name.                                                                     |
+| APP_URL                    | -                          | The domain for the server eg: https://a.bcd.com                                       |
+| APP_CONTAINER_NAME         | d2d_email_queue            | Docker container name                                                                 |
+| MAX_UPLOAD_SIZE            | 25                         | Max upload size for server per request.                                               |
+| SALT                       | -                          | Secret SALT to create JWT.                                                            |
+| JWT_EXP_HRS                | 3                          | Expire time for JWT in hrs.                                                           |
+| AWS_REGION                 | -                          | AWS SMTP Settings.                                                                    |
+| AWS_ACCESS_KEY_ID          | -                          | AWS SMTP Settings.                                                                    |
+| AWS_SECRET_ACCESS_KEY      | -                          | AWS SMTP Settings.                                                                    |
+| AWS_SES_SEND_LIMIT_PER_SEC | 10                         | 10 emails pre second.                                                                 |
+| AWS_SES_QUEUE_WAIT_TIME    | 1000                       | Cool down period before next batch in ms.                                             |
+| AWS_CONFIG_SET_NAME        | email-status               | The default configuration set name for SES.                                           |
+| MYSQL_HOST                 | server-mysql               | Default for docker.                                                                   |
+| MYSQL_USER                 | root                       | Default for docker.                                                                   |
+| MYSQL_PASS                 | root_password              | Default for docker.                                                                   |
+| MYSQL_PORT                 | 3959                       | Default for docker.                                                                   |
+| MYSQL_DB                   | d2d_email_queue            | Default for docker.                                                                   |
 
 <br/>
 <br/>
@@ -571,17 +572,18 @@ To edit: `src/middleware/multer.ts`
 
 `{{SERVER}}/server/email/add` `POST` `FORMDATA`
 
-| Key        | Type          | Required | Description                                                      |
-| ---------- | ------------- | -------- | ---------------------------------------------------------------- |
-| shortName  | string d      | Yes      | Senders Name.                                                    |
-| email      | string        | Yes      | Recipient Email.                                                 |
-| sendEmail  | string        | Yes      | The sending email.                                               |
-| replyEmail | string        | Yes      | Email recipient can reply to.                                    |
-| subject    | string        | Yes      | The subject of the email.                                        |
-| data       | string (JSON) | Yes      | Template data for email.                                         |
-| text       | string        | Yes      | Template string that is sent in-place of the template.           |
-| template   | string        | Yes      | Name of template eg: If template is "test.html" then type "test" |
-| files      | file/buffer   | No       | file/buffer[ ] of files for attachment.                          |
+| Key        | Type          | Required | Description                                                                                                                               |
+| ---------- | ------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| shortName  | string d      | Yes      | Senders Name.                                                                                                                             |
+| email      | string        | Yes      | Recipient Email.                                                                                                                          |
+| type       | string        | Yes      | Email type - `TRANSACTIONAL` or `PROMOTIONAL` (Transactional emails will take priority and will be sent 60% fast than promotional emails) |
+| sendEmail  | string        | Yes      | The sending email.                                                                                                                        |
+| replyEmail | string        | Yes      | Email recipient can reply to.                                                                                                             |
+| subject    | string        | Yes      | The subject of the email.                                                                                                                 |
+| data       | string (JSON) | Yes      | Template data for email.                                                                                                                  |
+| text       | string        | Yes      | Template string that is sent in-place of the template.                                                                                    |
+| template   | string        | Yes      | Name of template eg: If template is "test.html" then type "test"                                                                          |
+| files      | file/buffer   | No       | file/buffer[ ] of files for attachment.                                                                                                   |
 
 **Response**
 
@@ -632,23 +634,26 @@ Retrieving a specific set of records (max 20 per request) using the queue_id by 
 **Response**
 
 ```json
-{
-  "valid": true,
-  "result": [
-    {
-      "email_id": "IL2yFJifMdIj3h0FWUGh-Mr5v14-NjwRuHaUL1MC",
-      "email": "name@email.com",
-      "send_email": "email@company.com",
-      "subject": "Draft Email",
-      "data": "{\"NAME\":\"John Brown\",\"ACCOUNT\":238570023,\"BALANCE\":\"$345,600,00\",\"DATE\":\"Monday, November 4th, 2024\",\"SUPPORT_EMAIL\":\"support@company.com\"}",
-      "open": false,
-      "created_at": "2024-10-13T15:41:06.000Z",
-      "updated_at": "2024-10-13T15:41:08.000Z",
-      "attachments": 1,
-      "api_key": "xxxxx-xxxxxxxxxxxx_xxxxxxxx.1wiTebojwpv2w8WcYAzD"
-    }
-  ]
-}
+[
+  {
+    "valid": true,
+    "result": [
+      {
+        "email_id": "IL2yFJifMdIj3h0FWUGh-Mr5v14-NjwRuHaUL1MC",
+        "email": "name@email.com",
+        "send_email": "email@company.com",
+        "subject": "Draft Email",
+        "data": "{\"NAME\":\"John Brown\",\"ACCOUNT\":238570023,\"BALANCE\":\"$345,600,00\",\"DATE\":\"Monday, November 4th, 2024\",\"SUPPORT_EMAIL\":\"support@company.com\"}",
+        "open": false,
+        "created_at": "2024-10-13T15:41:06.000Z",
+        "updated_at": "2024-10-13T15:41:08.000Z",
+        "attachments": 1,
+        "api_key": "xxxxx-xxxxxxxxxxxx_xxxxxxxx.1wiTebojwpv2w8WcYAzD"
+      }
+    ]
+  },
+  ...
+]
 ```
 
 **Method 2**
@@ -660,7 +665,7 @@ Retrieving previously sent emails ordered by the most recent date, with a maximu
 | Key    | Type   | Value                                       |
 | ------ | ------ | ------------------------------------------- |
 | page   | number | Page number                                 |
-| amount | number | Number of results to retrieve min 1 max 50. |
+| amount | number | Number of results to retrieve min 5 max 50. |
 
 **Request**
 
@@ -674,23 +679,26 @@ Retrieving previously sent emails ordered by the most recent date, with a maximu
 **Response**
 
 ```json
-{
-  "valid": true,
-  "result": [
-    {
-      "email_id": "IL2yFJifMdIj3h0FWUGh-Mr5v14-NjwRuHaUL1MC",
-      "email": "name@email.com",
-      "send_email": "email@company.com",
-      "subject": "Draft Email",
-      "data": "{\"NAME\":\"John Brown\",\"ACCOUNT\":238570023,\"BALANCE\":\"$345,600,00\",\"DATE\":\"Monday, November 4th, 2024\",\"SUPPORT_EMAIL\":\"support@company.com\"}",
-      "open": false,
-      "created_at": "2024-10-13T15:41:06.000Z",
-      "updated_at": "2024-10-13T15:41:08.000Z",
-      "attachments": 1,
-      "api_key": "xxxxx-xxxxxxxxxxxx_xxxxxxxx.1wiTebojwpv2w8WcYAzD"
-    }
-  ]
-}
+[
+  {
+    "valid": true,
+    "result": [
+      {
+        "email_id": "IL2yFJifMdIj3h0FWUGh-Mr5v14-NjwRuHaUL1MC",
+        "email": "name@email.com",
+        "send_email": "email@company.com",
+        "subject": "Draft Email",
+        "data": "{\"NAME\":\"John Brown\",\"ACCOUNT\":238570023,\"BALANCE\":\"$345,600,00\",\"DATE\":\"Monday, November 4th, 2024\",\"SUPPORT_EMAIL\":\"support@company.com\"}",
+        "open": false,
+        "created_at": "2024-10-13T15:41:06.000Z",
+        "updated_at": "2024-10-13T15:41:08.000Z",
+        "attachments": 1,
+        "api_key": "xxxxx-xxxxxxxxxxxx_xxxxxxxx.1wiTebojwpv2w8WcYAzD"
+      }
+    ]
+  },
+  ...
+]
 ```
 
 </div>
@@ -712,6 +720,7 @@ Retrieving previously sent emails ordered by the most recent date, with a maximu
 {
   "status": "...",
   "email_id": "...",
+  "type":"...".
   "data":{
     "email_data": {
       "email": "...",

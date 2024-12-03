@@ -56,9 +56,9 @@ case "$1" in
     docker-dev)
         docker-dev
         ;;
-    docker-dev-node)
-        docker-dev-node
-        ;;
+    # docker-dev-node)
+    #     docker-dev-node
+    #     ;;
     docker-remove)
         docker-remove
         ;;

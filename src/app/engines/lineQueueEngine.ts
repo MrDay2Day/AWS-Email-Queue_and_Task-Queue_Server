@@ -1,10 +1,15 @@
+import { EmailDataReturnType } from "../controllers/EmailController";
+import { EMAIL_TYPE } from "../models/database/types/General_Types";
+
+type T = EmailDataReturnType;
+
 /**
  * A class representing a line queue that processes items in a FIFO manner with a set interval and delay between executions.
  *
- * @template T - The type of the items in the queue.
+ *
  * @template R - The type of the result returned from the queueFunction.
  */
-export default class LineQueue<T, R> {
+export class EmailLineQueue<R> {
   /**
    * The wait time (in milliseconds) before restarting the queue after reaching the interval limit.
    * @type {number}
@@ -16,6 +21,8 @@ export default class LineQueue<T, R> {
    * @type {T[]}
    */
   private queue: T[];
+  private transactions: T[];
+  private transactions_count: number;
 
   /**
    * The number of items to process in one batch.
@@ -73,9 +80,11 @@ export default class LineQueue<T, R> {
   ) {
     this.wait = wait;
     this.queue = [];
+    this.transactions = [];
     this.interval = interval;
     this.executed = 0;
     this.completed = 0;
+    this.transactions_count = 0;
     this.checkInterval = 50;
     this.queueFunction = queueFunction;
   }
@@ -86,7 +95,7 @@ export default class LineQueue<T, R> {
    */
   private init() {
     this.intervalId = setInterval(() => {
-      if (this.queue.length <= 0) {
+      if (this.queue.length <= 0 && this.transactions.length <= 0) {
         this.killInterval();
       } else if (this.executed < this.interval) {
         this.startQueue();
@@ -98,6 +107,7 @@ export default class LineQueue<T, R> {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
+      this.transactions_count = 0;
       this.completed = 0;
       this.executed = 0;
     }
@@ -127,17 +137,29 @@ export default class LineQueue<T, R> {
    * @returns {Promise<void>}
    */
   private async startQueue(): Promise<void> {
-    if (this.queue && this.queue.length > 0) {
+    if (this.queue.length > 0 || this.transactions.length > 0) {
       if (this.executed >= this.interval) {
         return;
       }
-      this.executed = this.executed + 1;
-      const tempt = this.queue[0];
 
-      this.queue = this.queue.filter((qt) => {
-        // @ts-expect-error: should work here
-        return qt.id !== tempt.id;
-      });
+      this.executed = this.executed + 1;
+      let tempt: EmailDataReturnType | undefined;
+
+      if (
+        this.transactions.length > 0 &&
+        this.transactions_count < Math.ceil(this.interval * 0.6)
+      ) {
+        this.transactions_count = this.transactions_count + 1;
+        tempt = this.transactions[0];
+        this.transactions = this.transactions.filter((qt) => {
+          return qt.id !== tempt?.id;
+        });
+      } else {
+        tempt = this.queue[0];
+        this.queue = this.queue.filter((qt) => {
+          return qt.id !== tempt?.id;
+        });
+      }
 
       try {
         const response = await this.queueFunction(tempt);
@@ -151,6 +173,7 @@ export default class LineQueue<T, R> {
           setTimeout(() => {
             this.executed = 0;
             this.completed = 0;
+            this.transactions_count = 0;
           }, this.wait);
         }
       }
@@ -163,7 +186,11 @@ export default class LineQueue<T, R> {
    * @param {T} x - The item to add to the queue.
    */
   add(x: T) {
-    this.queue.push(x);
+    if (x.type == EMAIL_TYPE.TRANSACTIONAL) {
+      this.transactions.push(x);
+    } else {
+      this.queue.push(x);
+    }
     if (!this.intervalId) {
       this.init();
     }

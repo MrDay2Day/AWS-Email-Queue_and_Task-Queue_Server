@@ -3,6 +3,7 @@ import * as aws from "@aws-sdk/client-ses";
 import path from "path";
 import fs from "fs";
 import { generateString, getRandomNumber } from "../utils/helpers";
+import { EMAIL_TYPE } from "../models/database/types/General_Types";
 
 const ses = new aws.SES({
   region: process.env.AWS_REGION ? process.env.AWS_REGION : "",
@@ -37,6 +38,7 @@ export type AWSEmailType = {
   sendEmail: string;
   shortName: string;
   subject: string;
+  type: EMAIL_TYPE;
   text?: string;
   data: Record<string, any>;
   emailAttachments: AttachmentType[];
@@ -44,7 +46,8 @@ export type AWSEmailType = {
 };
 
 const g = generateString;
-let count = 0;
+let count_promotional = 0;
+let count_transactional = 0;
 
 /**
  * @typedef {Object} AttachmentType
@@ -57,6 +60,7 @@ let count = 0;
 /**
  * @typedef {Object} AWSEmailType
  * @property {string} id - The unique identifier for the email.
+ * @property {string} type - Type of email whether TRANSACTIONAL or PROMOTIONAL.
  * @property {string} email - The recipient's email address.
  * @property {string} replyEmail - The email address to reply to.
  * @property {string} sendEmail - The sender's email address.
@@ -109,6 +113,7 @@ class EmailEngine {
     subject,
     data,
     text,
+    type,
     emailAttachments,
     template,
     id,
@@ -222,7 +227,11 @@ class EmailEngine {
           });
         } else {
           setTimeout(() => {
-            count++;
+            if (type == EMAIL_TYPE.TRANSACTIONAL) {
+              count_transactional++;
+            } else if (type == EMAIL_TYPE.PROMOTIONAL) {
+              count_promotional++;
+            }
             const returnData = {
               valid: true,
               dynamicDataListing,
@@ -244,7 +253,7 @@ class EmailEngine {
                 messageId: `${g(12)}.${g(12)}.${g(12)}`,
               },
             };
-            console.log({ count });
+            console.log({ count_transactional, count_promotional });
             resolve(returnData);
           }, getRandomNumber(1000, 5000));
         }

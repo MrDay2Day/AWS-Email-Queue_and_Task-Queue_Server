@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import LineQueue from "../engines/lineQueueEngine";
+
 import EmailEngine, {
   AttachmentType,
   AWSEmailType,
@@ -12,10 +12,14 @@ import ReturnAPIController from "./ReturnAPIController";
 import * as path from "path";
 import * as fs from "fs/promises";
 import { EmailClassSQL } from "../models/global/email_mysql";
-import { EMAIL_STATUS } from "../models/database/types/General_Types";
+import {
+  EMAIL_STATUS,
+  EMAIL_TYPE,
+} from "../models/database/types/General_Types";
 import { catchErrorPromise } from "../utils/catchError";
+import { EmailLineQueue } from "../engines/lineQueueEngine";
 
-type EmailDataReturnType = AWSEmailType & {
+export type EmailDataReturnType = AWSEmailType & {
   return_api: string;
   api_key: string;
   attachments: number;
@@ -30,7 +34,7 @@ const rate_limit = process.env.AWS_SES_SEND_LIMIT_PER_SEC
 
 async function main_function(data: EmailDataReturnType): Promise<void> {
   try {
-    let STATUS: string = "QUEUE";
+    let STATUS: string = process.env.TEST ? "SIMULATED" : "QUEUE";
     const email_record = new EmailClassSQL();
     await email_record.newRecord({
       id: data.id,
@@ -42,6 +46,7 @@ async function main_function(data: EmailDataReturnType): Promise<void> {
       return_api: data.return_api,
       attachments: data.attachments,
       api_key: data.api_key,
+      type: data.type,
     });
 
     try {
@@ -69,6 +74,7 @@ async function main_function(data: EmailDataReturnType): Promise<void> {
         await ReturnAPIController.post_return(data.api_key, data.return_api, {
           status: STATUS,
           email_id: data.id,
+          type: data.type,
           data: {
             email_data: {
               email: email_record.email,
@@ -108,7 +114,7 @@ async function main_function(data: EmailDataReturnType): Promise<void> {
     );
   }
 }
-const emailQueue = new LineQueue<EmailDataReturnType, void>(
+const emailQueue = new EmailLineQueue<void>(
   aws_wait_period,
   rate_limit,
   main_function
@@ -136,15 +142,24 @@ class EmailController {
         subject,
         data,
         text,
+        type,
         template,
       } = body;
-      if (!email || !replyEmail || !sendEmail || !subject) {
+      if (!email || !replyEmail || !sendEmail || !subject || !type) {
         throw {
-          msg: "Missing Field: - Required {shortName: string, email: string, replyEmail: string, sendEmail: string, subject: string, data: JSON, template: string}. Optional: - Attachments: {buffer: Buffer, mimeType: string} FormData field name = 'files' maximum of 5 attached files not exceeding 25MB.",
+          msg: "Missing Field: - Required {shortName: string, email: string, replyEmail: string, sendEmail: string, subject: string, data: JSON, type: string template: string}. Optional: - Attachments: {buffer: Buffer, mimeType: string} FormData field name = 'files' maximum of 5 attached files not exceeding 25MB.",
           code: "60021",
         };
       }
 
+      if (!Object.values(EMAIL_TYPE).includes(type)) {
+        throw {
+          msg: `Invalid email type, Email type should be either${Object.values(
+            EMAIL_TYPE
+          ).map((e) => ` ${e}`)}`,
+          code: "60076",
+        };
+      }
       if (!template && !text) {
         throw {
           msg: "Missing Field: - Required {template: string || text: string}.",
@@ -216,6 +231,7 @@ class EmailController {
         sendEmail,
         subject,
         text,
+        type,
         data: parsed_data,
         template,
         emailAttachments,
@@ -273,6 +289,7 @@ class EmailController {
           data: result.data,
           open: !!result.open,
           status: result.status,
+          type: result.type,
           aws_message_id: result.message_id,
           created_at: result.created_at,
           updated_at: result.updated_at,
@@ -343,6 +360,7 @@ class EmailController {
             data: email_record.returnData().data,
             open: !!email_record.returnData().open,
             status: email_record.returnData().status,
+            type: email_record.returnData().type,
             aws_message_id: email_record.returnData().message_id,
             created_at: email_record.returnData().created_at,
             updated_at: email_record.returnData().updated_at,

@@ -169,6 +169,11 @@ class EmailEngine {
           htmlString = htmlString.replace(trackerString, trackerTag);
         }
 
+        if (!htmlCode) {
+          const trackerTag = `<img src="${process.env.APP_URL}/identifier?id=${id}" width="1" height="1" style="display:none;" />`;
+          htmlString += trackerTag;
+        }
+
         const searchString = "<a";
         const replacementString = `<a ses:tags="${shortName}-${id}" `;
         const dynamicRegex = new RegExp(searchString, "g");

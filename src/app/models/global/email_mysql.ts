@@ -168,7 +168,7 @@ export class EmailClassSQL implements EmailDataTypes {
         [this.message_id]
       )) as SelectEmailDataTypes[];
 
-      const record_data: EmailDataTypes | null | undefined = fetched[0];
+      const record_data: EmailDataTypes | undefined = fetched[0];
 
       if (record_data) {
         this.open = record_data.open;

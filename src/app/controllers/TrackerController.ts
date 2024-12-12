@@ -43,6 +43,7 @@ export default class TrackerController {
                   send_email: email_record.send_email,
                   subject: email_record.subject,
                   data: email_record.data,
+                  attachments: email_record.attachments,
                   open: !!email_record.open,
                 },
               },
@@ -120,6 +121,7 @@ export default class TrackerController {
           // Handle delivery events
           if (notification.eventType === "Delivery") {
             const deliveryInfo = notification.delivery;
+            // console.dir(notification, { depth: "*" });
             // console.log(`Email delivered to: ${deliveryInfo.recipients}`);
 
             await email_record.updateRecord({
@@ -168,6 +170,7 @@ export default class TrackerController {
                   send_email: email_record.send_email,
                   subject: email_record.subject,
                   data: email_record.data,
+                  attachments: email_record.attachments,
                   open: !!email_record.open,
                 },
                 aws_data: notification,

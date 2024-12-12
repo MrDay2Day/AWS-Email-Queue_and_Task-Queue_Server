@@ -27,7 +27,7 @@ event_queue.on(EmitListenTypes.EXPIRED, async (data) => {
       }
     );
   } catch (error) {
-    console.log(`${EmitListenTypes.EXPIRED}-ERROR`, error);
+    console.log(`TASK-QUEUE-${EmitListenTypes.EXPIRED}-ERROR`, error);
   }
 });
 event_queue.on(EmitListenTypes.ADD, async (data) => {
@@ -43,7 +43,7 @@ event_queue.on(EmitListenTypes.ADD, async (data) => {
       }
     );
   } catch (error) {
-    console.log(`${EmitListenTypes.ADD}-ERROR`, error);
+    console.log(`TASK-QUEUE-${EmitListenTypes.ADD}-ERROR`, error);
   }
 });
 event_queue.on(EmitListenTypes.REMOVE, async (data) => {
@@ -59,7 +59,7 @@ event_queue.on(EmitListenTypes.REMOVE, async (data) => {
       }
     );
   } catch (error) {
-    console.log(`${EmitListenTypes.REMOVE}-ERROR`, error);
+    console.log(`TASK-QUEUE-${EmitListenTypes.REMOVE}-ERROR`, error);
   }
 });
 

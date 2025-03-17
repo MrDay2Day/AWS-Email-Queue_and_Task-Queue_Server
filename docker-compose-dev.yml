@@ -8,7 +8,7 @@ services:
       - main_network
     environment:
       MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: main_datae
+      MYSQL_DATABASE: main_data
       MYSQL_USER: main_user
       MYSQL_PASSWORD: user_password
     volumes:
@@ -26,7 +26,8 @@ services:
           "localhost",
           "-u",
           "root",
-          "-p${MYSQL_ROOT_PASSWORD}",
+          "-p",
+          "root_password",
         ]
       interval: 10s
       retries: 5

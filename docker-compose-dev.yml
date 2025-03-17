@@ -16,23 +16,23 @@ services:
       - ./sql/my.cnf:/etc/mysql/my.cnf
     ports:
       - "3959:3306"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-p",
-          "root_password",
-        ]
-      interval: 10s
-      retries: 5
-      timeout: 5s
-      start_period: 30s
+    # healthcheck:
+    #   test:
+    #     [
+    #       "CMD",
+    #       "mysqladmin",
+    #       "ping",
+    #       "-h",
+    #       "localhost",
+    #       "-u",
+    #       "root",
+    #       "-p",
+    #       "root_password",
+    #     ]
+    #   interval: 10s
+    #   retries: 5
+    #   timeout: 5s
+    #   start_period: 30s
 
   aws-queue-node-server:
     restart: unless-stopped

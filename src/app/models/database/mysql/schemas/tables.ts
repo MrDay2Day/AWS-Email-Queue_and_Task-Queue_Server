@@ -16,7 +16,7 @@ CREATE TABLE ${table_name} (
   attachments INT,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (api_key) REFERENCES api_key(api_key)
+  FOREIGN KEY (api_key) REFERENCES api_key(api_key) ON DELETE CASCADE
 )`;
   return { table_name, script };
 }
@@ -33,7 +33,7 @@ CREATE TABLE ${table_name} (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   expire_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (api_key) REFERENCES api_key(api_key)
+  FOREIGN KEY (api_key) REFERENCES api_key(api_key) ON DELETE CASCADE
 )`;
   return { table_name, script };
 }

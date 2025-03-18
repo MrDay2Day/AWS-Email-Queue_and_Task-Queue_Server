@@ -33,14 +33,12 @@ function commonFiles(req: Request, file: UploadedFileType, callback: any) {
       "application/json",
       "application/xml ",
     ];
-    if (fileFormat.includes(file.mimetype)) {
-      callback(null, true);
-    } else {
-      callback(null, false);
-      callback(
+    if (!fileFormat.includes(file.mimetype)) {
+      return callback(
         new Error("Please ensure you are uploading 1 image (jpeg or png).")
       );
     }
+    callback(null, true);
   } catch (error) {
     callback(
       new Error("Something went wrong processing this file. Code: FL000004")
@@ -51,12 +49,13 @@ function commonFiles(req: Request, file: UploadedFileType, callback: any) {
 function htmlFile(req: Request, file: UploadedFileType, callback: any) {
   try {
     const fileFormat = ["text/html"];
-    if (fileFormat.includes(file.mimetype)) {
-      callback(null, true);
-    } else {
-      callback(null, false);
-      callback(new Error("Please ensure you are uploading 1 html file."));
+    if (!fileFormat.includes(file.mimetype)) {
+      return callback(
+        new Error("Please ensure you are uploading 1 html file."),
+        false
+      );
     }
+    callback(null, true);
   } catch (error) {
     callback(
       new Error("Something went wrong processing this file. Code: FL000005")
@@ -65,14 +64,14 @@ function htmlFile(req: Request, file: UploadedFileType, callback: any) {
 }
 
 // Multer Middleware
+export const html = multer({
+  limits,
+  storage,
+  fileFilter: htmlFile,
+}).fields([{ name: "html", maxCount: 1 }]);
+
 export const files = multer({
   limits,
   storage,
   fileFilter: commonFiles,
-}).fields([{ name: "files", maxCount: 5 }]);
-
-export const html = multer({
-  limits: { fileSize: 614400 },
-  storage,
-  fileFilter: htmlFile,
-}).fields([{ name: "html", maxCount: 1 }]);
+}).fields([{ name: "files", maxCount: 10 }]);

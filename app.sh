@@ -13,7 +13,7 @@ docker-prod() {
 
 docker-dev() {
     echo "Starting Development services..."
-    docker compose -f docker-compose-dev.yml down --volumes --rmi all --remove-orphans
+    # docker compose -f docker-compose-dev.yml down --volumes --rmi all --remove-orphans
     docker compose -f docker-compose-dev.yml --build --no-cache
     docker compose -f docker-compose-dev.yml up -d
     echo "Development started -> ts-node-dev."
